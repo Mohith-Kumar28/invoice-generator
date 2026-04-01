@@ -21,6 +21,7 @@ export function calculateInvoiceTotals(params: {
   taxLines: Partial<TaxLine>[];
   shippingFee: number;
   partialPayments?: Partial<PartialPayment>[];
+  amountPaid?: number;
 }) {
   const subtotal = params.lineItems.reduce((sum, item) => sum + calculateLineItemAmount(item), 0);
 
@@ -33,35 +34,47 @@ export function calculateInvoiceTotals(params: {
   
   const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount);
 
+  const computedTaxLines: TaxLine[] = (params.taxLines || []).map((t) => ({
+    id: t.id || '',
+    name: t.name || 'Tax',
+    rate: t.rate || 0,
+    amount: 0,
+    compound: !!t.compound,
+  }));
+
   // Separate compound and non-compound taxes
-  const standardTaxes = params.taxLines.filter(t => !t.compound);
-  const compoundTaxes = params.taxLines.filter(t => t.compound);
+  const standardTaxes = computedTaxLines.filter((t) => !t.compound);
+  const compoundTaxes = computedTaxLines.filter((t) => t.compound);
 
   let totalTaxAmount = 0;
 
   // Calculate standard taxes based on subtotalAfterDiscount
-  standardTaxes.forEach(tax => {
-    const amount = subtotalAfterDiscount * ((tax.rate || 0) / 100);
+  standardTaxes.forEach((tax) => {
+    const amount = subtotalAfterDiscount * (tax.rate / 100);
     totalTaxAmount += amount;
-    tax.amount = amount; // In a pure function, mutating is bad, but we assume caller updates state
+    tax.amount = amount;
   });
 
   // Calculate compound taxes based on (subtotalAfterDiscount + standardTaxes)
   const baseForCompound = subtotalAfterDiscount + totalTaxAmount;
-  compoundTaxes.forEach(tax => {
-    const amount = baseForCompound * ((tax.rate || 0) / 100);
+  compoundTaxes.forEach((tax) => {
+    const amount = baseForCompound * (tax.rate / 100);
     totalTaxAmount += amount;
     tax.amount = amount;
   });
 
   const total = subtotalAfterDiscount + totalTaxAmount + (params.shippingFee || 0);
 
-  const amountPaid = (params.partialPayments || []).reduce((sum, p) => sum + (p.amount || 0), 0);
+  const amountPaid =
+    typeof params.amountPaid === 'number'
+      ? params.amountPaid
+      : (params.partialPayments || []).reduce((sum, p) => sum + (p.amount || 0), 0);
   const amountDue = Math.max(0, total - amountPaid);
 
   return {
     subtotal,
     discountAmount,
+    taxLines: computedTaxLines,
     totalTaxAmount,
     total,
     amountPaid,

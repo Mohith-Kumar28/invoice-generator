@@ -20,14 +20,27 @@ export const useSavedInvoicesStore = create<SavedInvoicesState>()(
         if (!invoice.invoiceNumber && !invoice.to?.businessName && (!invoice.lineItems || invoice.lineItems.length === 0)) {
           return state;
         }
+
+        // Deep clone without logos to save localStorage space
+        const invoiceToSave = { ...invoice };
+        if (invoiceToSave.from) {
+          invoiceToSave.from = { ...invoiceToSave.from };
+          delete invoiceToSave.from.logo;
+        }
+        if (invoiceToSave.to) {
+          invoiceToSave.to = { ...invoiceToSave.to };
+          delete invoiceToSave.to.logo;
+        }
+        delete (invoiceToSave as any).signature;
+        delete (invoiceToSave as any).upiQr;
         
-        const existingIndex = state.invoices.findIndex(i => i.id === invoice.id);
+        const existingIndex = state.invoices.findIndex(i => i.id === invoiceToSave.id);
         if (existingIndex >= 0) {
           const updated = [...state.invoices];
-          updated[existingIndex] = { ...invoice, updatedAt: new Date() };
+          updated[existingIndex] = { ...invoiceToSave, updatedAt: new Date() };
           return { invoices: updated };
         }
-        return { invoices: [{ ...invoice, createdAt: new Date(), updatedAt: new Date() }, ...state.invoices] };
+        return { invoices: [{ ...invoiceToSave, createdAt: new Date(), updatedAt: new Date() }, ...state.invoices] };
       }),
       deleteInvoice: (id) => set((state) => ({
         invoices: state.invoices.filter((i) => i.id !== id),

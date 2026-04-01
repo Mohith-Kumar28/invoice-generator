@@ -1,20 +1,18 @@
 export interface Invoice {
   // Meta
   id: string; // UUID
-  invoiceNumber: string; // e.g. INV-0042
-  title: string;
-  status: "draft" | "sent" | "paid" | "overdue" | "cancelled";
-  template: string;
-  colorTheme: string;
-  currency: string;
-  locale: string; // for number formatting
 
-  // Dates
+  // Section 1: Invoice Details
+  invoiceNumber: string; // e.g. INV-0042
+  title: string; // e.g. TAX INVOICE, RECEIPT
   issueDate: Date;
   dueDate: Date;
   deliveryDate?: Date;
+  poNumber?: string;
+  currency: string;
+  status?: "draft" | "sent" | "paid" | "overdue" | "cancelled" | "partial" | "refunded" | "void";
 
-  // From (Business/Sender)
+  // Section 2: From (Business/Sender)
   from: {
     logo?: string; // base64 or URL
     businessName: string;
@@ -24,24 +22,23 @@ export interface Invoice {
     address: Address;
     taxId?: string; // VAT/GST/EIN
     website?: string;
-    bankDetails?: BankDetails;
   };
 
-  // To (Client/Recipient)
+  // Section 3: To (Client/Recipient)
   to: {
+    logo?: string;
     businessName: string;
     contactName?: string;
     email?: string;
     phone?: string;
     address: Address;
     taxId?: string;
-    poNumber?: string; // Purchase Order number
   };
 
-  // Line Items
+  // Section 4: Line Items
   lineItems: LineItem[];
 
-  // Calculations
+  // Section 5: Pricing & Taxes
   subtotal: number; // computed
   discountType: "percentage" | "fixed";
   discountValue: number;
@@ -49,26 +46,45 @@ export interface Invoice {
   taxLines: TaxLine[]; // support multiple tax lines (GST, VAT, etc.)
   shippingFee: number;
   total: number; // computed
-
-  // Payment
-  paymentTerms: PaymentTerm; // Net 30, Due on receipt, etc.
-  paymentMethods: string[]; // Bank transfer, PayPal, Crypto, etc.
-  paymentInstructions?: string;
+  
   partialPayments?: PartialPayment[];
-  amountPaid: number;
+  amountPaid: number; // computed
   amountDue: number; // computed
 
-  // Additional
+  // Section 6: Payment Details
+  paymentTerms?: PaymentTerm; // Net 30, Due on receipt, etc.
+  paymentMethods: string[]; // Bank transfer, PayPal, Crypto, etc.
+  paymentMode?: "upi" | "bank" | "url";
+  bankDetails?: BankDetails;
+  paymentLink?: string;
+  lateFeePolicy?: string;
+
+  // Section 7: Notes & Terms
   notes?: string; // visible on invoice
   terms?: string; // terms & conditions
+
+  // Section 8: Signature
   signature?: string; // base64 SVG/PNG
-  attachments?: Attachment[];
+  signatureTyped?: string;
+  signatureName?: string;
+  signatureRole?: string;
+  showSignature: boolean;
+  signatureMode?: "draw" | "type" | "upload";
+
+  // Section 9: Design & Branding
+  template: string;
+  colorTheme: string;
+  fontPairing: string;
+  showLogo: boolean;
+  showFooter: boolean;
+  showPageNumbers: boolean;
+  showWatermark: boolean;
+
+  upiQr?: string;
 
   // Metadata
   createdAt: Date;
   updatedAt: Date;
-  sentAt?: Date;
-  paidAt?: Date;
 }
 
 export interface LineItem {

@@ -7,7 +7,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { calculateLineItemAmount } from "@/lib/invoice-calculator";
 
 export function LineItemsTable() {
-  const { invoice, updateInvoice } = useInvoiceStore();
+  const { invoice, updateInvoice, errors } = useInvoiceStore();
 
   const addItem = () => {
     const newItem = {
@@ -36,6 +36,11 @@ export function LineItemsTable() {
 
   return (
     <div className="space-y-4">
+      {errors.lineItems ? (
+        <div className="text-sm text-destructive border border-destructive/30 bg-destructive/5 rounded-lg p-3">
+          {errors.lineItems}
+        </div>
+      ) : null}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[600px] text-sm">
           <thead>
@@ -84,7 +89,7 @@ export function LineItemsTable() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-muted-foreground hover:text-destructive"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => removeItem(index)}
                   >
                     <Trash2 className="h-4 w-4" />

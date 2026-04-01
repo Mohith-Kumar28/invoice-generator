@@ -1,15 +1,13 @@
-import { ClassicTemplate } from "./ClassicTemplate";
-import { ModernTemplate } from "./ModernTemplate";
+import { InvoiceTemplate } from "./InvoiceTemplate";
 
 export const templates = {
-  classic: ClassicTemplate,
-  modern: ModernTemplate,
-  // Fallbacks for the rest of the 7 requested templates
-  minimal: ModernTemplate,
-  bold: ClassicTemplate,
-  creative: ModernTemplate,
-  corporate: ClassicTemplate,
-  freelancer: ModernTemplate,
+  modern: ({ invoice }: { invoice: any }) => <InvoiceTemplate invoice={invoice} variant="modern" />,
+  classic: ({ invoice }: { invoice: any }) => <InvoiceTemplate invoice={invoice} variant="classic" />,
+  minimal: ({ invoice }: { invoice: any }) => <InvoiceTemplate invoice={invoice} variant="minimal" />,
+  bold: ({ invoice }: { invoice: any }) => <InvoiceTemplate invoice={invoice} variant="bold" />,
+  creative: ({ invoice }: { invoice: any }) => <InvoiceTemplate invoice={invoice} variant="creative" />,
+  corporate: ({ invoice }: { invoice: any }) => <InvoiceTemplate invoice={invoice} variant="corporate" />,
+  freelancer: ({ invoice }: { invoice: any }) => <InvoiceTemplate invoice={invoice} variant="freelancer" />,
 };
 
 export type TemplateKey = keyof typeof templates;

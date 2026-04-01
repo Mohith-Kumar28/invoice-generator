@@ -4,15 +4,16 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useInvoiceStore } from "@/store/invoice.store";
 import { useSavedInvoicesStore } from "@/store/saved-invoices.store";
-import { FileDown, FilePlus, Archive, Check, Loader2 } from "lucide-react";
+import { FileDown, FilePlus, Archive, Check, Loader2, RotateCcw } from "lucide-react";
 import { Invoice } from "@/types/invoice.types";
 import { pdf } from '@react-pdf/renderer';
 import { templates, TemplateKey } from "@/features/templates/renderers";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { InvoiceList } from "@/features/saved-invoices/components/InvoiceList";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export function GlobalActions() {
-  const { invoice, resetInvoice, updateInvoice } = useInvoiceStore();
+  const { invoice, resetInvoice, updateInvoice, setErrors, clearErrors } = useInvoiceStore();
   const { saveInvoice } = useSavedInvoicesStore();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 
@@ -33,12 +34,56 @@ export function GlobalActions() {
       setTimeout(() => {
         setSaveStatus("idle");
       }, 2000);
-    }, 1000);
+    }, 2000);
 
     return () => clearTimeout(timeoutId);
   }, [invoice, saveInvoice, updateInvoice]);
 
   const handleDownload = async () => {
+    const nextErrors: Record<string, string> = {};
+    const email = invoice.from?.email || "";
+    const hasEmail = !!email.trim();
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+    if (!invoice.invoiceNumber?.trim()) nextErrors.invoiceNumber = "Invoice number is required.";
+    if (!invoice.title?.trim()) nextErrors.title = "Invoice title is required.";
+    if (!invoice.issueDate) nextErrors.issueDate = "Issue date is required.";
+    if (!invoice.dueDate) nextErrors.dueDate = "Due date is required.";
+    if (!invoice.currency) nextErrors.currency = "Currency is required.";
+    if (!invoice.from?.businessName?.trim()) nextErrors["from.businessName"] = "Business name is required.";
+    if (!hasEmail) nextErrors["from.email"] = "Email is required.";
+    if (hasEmail && !emailOk) nextErrors["from.email"] = "Enter a valid email.";
+    if (!invoice.to?.businessName?.trim()) nextErrors["to.businessName"] = "Client business name is required.";
+
+    const items = invoice.lineItems || [];
+    if (items.length === 0) {
+      nextErrors.lineItems = "Add at least one line item.";
+    } else if (items.some((i) => !i.description || !String(i.description).trim())) {
+      nextErrors.lineItems = "Each line item must have a description.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      const focusMap: Record<string, string> = {
+        invoiceNumber: "invoiceNumber",
+        title: "invoiceTitlePreset",
+        issueDate: "issueDateField",
+        dueDate: "dueDateField",
+        currency: "currencyField",
+        "from.businessName": "fromBusinessName",
+        "from.email": "fromEmail",
+        "to.businessName": "toBusinessName",
+      };
+      const firstKey = Object.keys(nextErrors)[0];
+      const elId = focusMap[firstKey];
+      if (elId) {
+        const el = document.getElementById(elId);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
+    clearErrors();
     const SelectedTemplate = templates[(invoice.template as TemplateKey) || "modern"] || templates.modern;
     const blob = await pdf(<SelectedTemplate invoice={invoice} />).toBlob();
     const url = URL.createObjectURL(blob);
@@ -87,6 +132,33 @@ export function GlobalActions() {
             </>
           )}
         </div>
+        <Dialog>
+          <DialogTrigger render={
+            <Button variant="outline">
+              <RotateCcw className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Reset</span>
+            </Button>
+          } />
+          <DialogContent showCloseButton={false}>
+            <DialogHeader>
+              <DialogTitle>Reset invoice?</DialogTitle>
+              <DialogDescription>
+                This clears the current invoice form. Saved invoices are not affected.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose render={<Button variant="outline" />}>
+                Cancel
+              </DialogClose>
+              <DialogClose
+                render={<Button variant="destructive" />}
+                onClick={() => resetInvoice()}
+              >
+                Reset
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <Button variant="outline" onClick={resetInvoice}>
           <FilePlus className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">New</span>
