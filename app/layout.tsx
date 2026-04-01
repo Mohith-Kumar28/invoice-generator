@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { GoogleAnalytics } from "@/components/shared/GoogleAnalytics";
+import { GoogleTagManager } from "@/components/shared/GoogleTagManager";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { Header } from "@/components/layout/Header";
 import { APP_NAME } from "@/lib/site";
@@ -18,11 +18,24 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
+        {gtmId ? (
+          <noscript>
+            <iframe
+              title="Google Tag Manager"
+              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
+        ) : null}
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -31,7 +44,7 @@ export default function RootLayout({
         >
           <Header />
           <main className="flex-1 flex flex-col">{children}</main>
-          <GoogleAnalytics />
+          <GoogleTagManager />
         </ThemeProvider>
       </body>
     </html>

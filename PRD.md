@@ -666,9 +666,9 @@ Generate dynamic Open Graph images using `@vercel/og` for each page and invoice 
 ```
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-XXXXXXXXXXXXXXXX
 NEXT_PUBLIC_META_PIXEL_ID=XXXXXXXXXXXXXXXX
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 NEXT_PUBLIC_SITE_URL=https://invoicelab.in
 NEXT_PUBLIC_APP_NAME=InvoiceLab
+NEXT_PUBLIC_GTM_ID=GTM-XXXXXXXX
 ```
 
 ---
