@@ -33,6 +33,7 @@ export const useSavedInvoicesStore = create<SavedInvoicesState>()(
         }
         delete (invoiceToSave as any).signature;
         delete (invoiceToSave as any).upiQr;
+        delete (invoiceToSave as any).pdfBrand;
         
         const existingIndex = state.invoices.findIndex(i => i.id === invoiceToSave.id);
         if (existingIndex >= 0) {

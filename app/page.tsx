@@ -17,7 +17,7 @@ export default function InvoicePage() {
       </div>
 
       {/* Right Panel - Preview (Desktop) */}
-      <div className="hidden md:flex w-full md:w-1/2 h-full bg-muted/30 items-center justify-center p-6 overflow-hidden">
+      <div className="hidden md:flex w-full md:w-1/2 h-full bg-background overflow-hidden">
         <InvoicePreview />
       </div>
       
@@ -29,8 +29,8 @@ export default function InvoicePage() {
               Preview PDF
             </button>
           } />
-          <SheetContent side="bottom" className="h-[85vh] p-0 pt-8 rounded-t-xl flex flex-col">
-            <div className="flex-1 overflow-hidden bg-muted/30 flex items-center justify-center p-2">
+          <SheetContent side="bottom" className="h-[85vh] p-0 rounded-t-xl flex flex-col">
+            <div className="flex-1 overflow-hidden bg-background">
               <InvoicePreview />
             </div>
           </SheetContent>

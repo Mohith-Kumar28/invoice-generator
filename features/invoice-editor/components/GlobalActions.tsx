@@ -10,6 +10,7 @@ import { pdf } from '@react-pdf/renderer';
 import { templates, TemplateKey } from "@/features/templates/renderers";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { InvoiceList } from "@/features/saved-invoices/components/InvoiceList";
+import { resolveCssVarColor } from "@/lib/css-vars";
 
 export function GlobalActions() {
   const { invoice, resetInvoice, updateInvoice, setErrors, clearErrors } = useInvoiceStore();
@@ -113,18 +114,6 @@ export function GlobalActions() {
     clearErrors();
     try {
       const SelectedTemplate = templates[(invoice.template as TemplateKey) || "modern"] || templates.modern;
-      const resolveCssVarColor = (varName: string) => {
-        if (typeof document === "undefined") return undefined;
-        const el = document.createElement("div");
-        el.style.position = "absolute";
-        el.style.left = "-9999px";
-        el.style.top = "-9999px";
-        el.style.color = `var(${varName})`;
-        document.body.appendChild(el);
-        const color = getComputedStyle(el).color;
-        document.body.removeChild(el);
-        return color || undefined;
-      };
       const pdfBrand = {
         primary: resolveCssVarColor("--primary") || "rgb(0, 56, 224)",
         secondary: resolveCssVarColor("--secondary") || "rgb(255, 255, 0)",
@@ -169,7 +158,7 @@ export function GlobalActions() {
           } />
           <SheetContent side="left" className="w-[400px] sm:w-[540px] p-0 flex flex-col">
             <SheetHeader className="p-4 border-b">
-              <SheetTitle>My Invoices</SheetTitle>
+              <SheetTitle>Last 50 Invoices</SheetTitle>
             </SheetHeader>
             <div className="flex-1 overflow-hidden">
               <InvoiceList />

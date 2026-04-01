@@ -8,6 +8,8 @@ import { ExternalLink, Loader2 } from "lucide-react";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/useDebounce";
+import { resolveCssVarColor } from "@/lib/css-vars";
 
 // Use usePDF hook instead of PDFViewer to avoid flickering and guarantee updates
 const PdfRenderer = dynamic(
@@ -63,32 +65,6 @@ const PdfRenderer = dynamic(
     ),
   }
 );
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-  return debouncedValue;
-}
-
-function resolveCssVarColor(varName: string) {
-  if (typeof document === "undefined") return undefined;
-  const el = document.createElement("div");
-  el.style.position = "absolute";
-  el.style.left = "-9999px";
-  el.style.top = "-9999px";
-  el.style.color = `var(${varName})`;
-  document.body.appendChild(el);
-  const color = getComputedStyle(el).color;
-  document.body.removeChild(el);
-  return color || undefined;
-}
 
 function resolvePdfBrand() {
   const primary = resolveCssVarColor("--primary") || "rgb(0, 56, 224)";
@@ -153,8 +129,8 @@ export function InvoicePreview() {
   const computedFileName = `${computedFileNameBase}.pdf`;
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-2 md:p-4">
-      <div className="w-full h-full max-w-[800px] shadow-2xl rounded-xl overflow-hidden bg-white border border-border">
+    <div className="w-full h-full flex flex-col">
+      <div className="w-full h-full overflow-hidden bg-background">
         <div className="flex items-center justify-between gap-2 px-3 py-2 border-b bg-background/80 backdrop-blur">
           <div className="flex-1 min-w-0">
             <Input
