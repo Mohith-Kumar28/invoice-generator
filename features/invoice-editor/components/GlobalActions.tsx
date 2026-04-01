@@ -4,18 +4,25 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useInvoiceStore } from "@/store/invoice.store";
 import { useSavedInvoicesStore } from "@/store/saved-invoices.store";
-import { FileDown, FilePlus, Archive, Check, Loader2 } from "lucide-react";
+import { FileDown, FilePlus, Archive, Check, Loader2, Share2, Copy } from "lucide-react";
 import { Invoice } from "@/types/invoice.types";
 import { pdf } from '@react-pdf/renderer';
 import { templates, TemplateKey } from "@/features/templates/renderers";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { InvoiceList } from "@/features/saved-invoices/components/InvoiceList";
 import { resolveCssVarColor } from "@/lib/css-vars";
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { encodeInvoiceToUrlParam } from "@/lib/share-invoice";
 
 export function GlobalActions() {
   const { invoice, resetInvoice, updateInvoice, setErrors, clearErrors } = useInvoiceStore();
   const { saveInvoice, invoices } = useSavedInvoicesStore();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [savedOpen, setSavedOpen] = useState(false);
 
   const getNextInvoiceNumber = () => {
     let max = 0;
@@ -146,10 +153,42 @@ export function GlobalActions() {
     updateInvoice({ invoiceNumber: nextInvoiceNumber, createdAt: new Date() });
   };
 
+  const buildShareUrl = () => {
+    const u = new URL(window.location.href);
+    u.searchParams.delete("s");
+    const encoded = encodeInvoiceToUrlParam(invoice);
+    u.searchParams.set("s", encoded);
+    u.hash = "";
+    return u.toString();
+  };
+
+  const handleShare = async () => {
+    const url = buildShareUrl();
+    setShareUrl(url);
+    setCopied(false);
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        await (navigator as any).share({ url, title: "Invoice" });
+        return;
+      } catch {
+      }
+    }
+    setShareOpen(true);
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+    }
+  };
+
   return (
     <div className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur border-b border-border/40 p-3 sm:p-4 flex items-center shadow-sm overflow-x-auto gap-2 no-scrollbar shrink-0">
       <div className="flex items-center space-x-2 shrink-0">
-        <Sheet>
+        <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
           <SheetTrigger render={
             <Button variant="outline">
               <Archive className="h-4 w-4 sm:mr-2" />
@@ -161,7 +200,7 @@ export function GlobalActions() {
               <SheetTitle>Last 50 Invoices</SheetTitle>
             </SheetHeader>
             <div className="flex-1 overflow-hidden">
-              <InvoiceList />
+              <InvoiceList onSelect={() => setSavedOpen(false)} />
             </div>
           </SheetContent>
         </Sheet>
@@ -182,6 +221,27 @@ export function GlobalActions() {
             </>
           )}
         </div>
+        <Button variant="outline" onClick={handleShare}>
+          <Share2 className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Share</span>
+        </Button>
+        <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Share invoice</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Input readOnly value={shareUrl} />
+            </div>
+            <DialogFooter>
+              <DialogClose render={<Button variant="outline" />}>Close</DialogClose>
+              <Button onClick={handleCopy} variant="default">
+                {copied ? <Check className="h-4 w-4 sm:mr-2" /> : <Copy className="h-4 w-4 sm:mr-2" />}
+                <span>{copied ? "Copied" : "Copy link"}</span>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <Button variant="secondary" onClick={handleNew}>
           <FilePlus className="h-4 w-4 sm:mr-2" />
           <span>New</span>

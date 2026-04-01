@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function InvoiceList() {
+export function InvoiceList({ onSelect }: { onSelect?: () => void }) {
   const { invoices, deleteInvoice, clearAllInvoices } = useSavedInvoicesStore();
   const { setInvoice } = useInvoiceStore();
 
@@ -55,7 +55,15 @@ export function InvoiceList() {
                 {inv.lineItems?.length || 0} items
               </div>
               <div className="flex gap-2">
-                <Button variant="secondary" size="sm" onClick={() => setInvoice(inv)} className="h-8">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setInvoice(inv);
+                    onSelect?.();
+                  }}
+                  className="h-8"
+                >
                   <Edit className="h-3.5 w-3.5 mr-1.5" />
                   Edit
                 </Button>

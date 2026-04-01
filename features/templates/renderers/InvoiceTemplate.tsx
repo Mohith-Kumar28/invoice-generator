@@ -318,7 +318,7 @@ export function InvoiceTemplate({
       marginBottom: 24,
     },
     addressBox: { width: "48%" },
-    addressRow: { flexDirection: "row", justifyContent: "space-between", gap: 10 },
+    addressRow: { flexDirection: "row", justifyContent: "space-between", gap: 10, alignItems: "flex-start" },
     addressCol: { flex: 1 },
     label: {
       fontSize: 10,

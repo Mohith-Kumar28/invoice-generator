@@ -896,19 +896,24 @@ export function Section8Signature() {
     if (!canvas || !wrap) return;
     const ratio = Math.max(window.devicePixelRatio || 1, 1);
     const width = wrap.clientWidth;
-    const height = 140;
+    if (!width) return;
+    const height = wrap.clientHeight || 140;
     canvas.width = width * ratio;
     canvas.height = height * ratio;
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     const ctx = canvas.getContext("2d");
-    if (ctx) ctx.scale(ratio, ratio);
+    if (ctx) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(ratio, ratio);
+    }
     padRef.current?.clear();
   }, []);
 
   React.useEffect(() => {
     if (selectedMode !== "draw") return;
     const canvas = canvasRef.current;
+    const wrap = canvasWrapRef.current;
     if (!canvas) return;
     padRef.current = new SignaturePad(canvas, {
       backgroundColor: "rgb(255,255,255)",
@@ -917,10 +922,25 @@ export function Section8Signature() {
       maxWidth: 2.5,
     });
 
-    resizeCanvas();
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        resizeCanvas();
+      });
+    });
+
+    let ro: ResizeObserver | undefined;
+    if (wrap && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => resizeCanvas());
+      ro.observe(wrap);
+    }
     const onResize = () => resizeCanvas();
     window.addEventListener("resize", onResize);
     return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      ro?.disconnect();
       window.removeEventListener("resize", onResize);
       padRef.current?.off();
       padRef.current = null;
@@ -994,8 +1014,8 @@ export function Section8Signature() {
           {selectedMode === "draw" && (
             <div className="space-y-2">
               <Label>Draw Signature</Label>
-              <div ref={canvasWrapRef} className="border rounded-lg overflow-hidden bg-white">
-                <canvas ref={canvasRef} className="w-full touch-none" />
+              <div ref={canvasWrapRef} className="border rounded-lg overflow-hidden bg-white h-[140px]">
+                <canvas ref={canvasRef} className="w-full h-full touch-none" />
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={clearDraw}>

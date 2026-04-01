@@ -1,11 +1,35 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { InvoiceForm } from "@/features/invoice-editor/components/InvoiceForm";
 import { InvoicePreview } from "@/features/invoice-editor/components/InvoicePreview";
 import { GlobalActions } from "@/features/invoice-editor/components/GlobalActions";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { decodeInvoiceFromUrlParam } from "@/lib/share-invoice";
+import { useInvoiceStore } from "@/store/invoice.store";
 
 export default function InvoicePage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const appliedRef = useRef(false);
+  const setInvoice = useInvoiceStore((s) => s.setInvoice);
+
+  useEffect(() => {
+    if (appliedRef.current) return;
+    const encoded = params.get("s");
+    if (!encoded) return;
+    const decoded = decodeInvoiceFromUrlParam(encoded);
+    if (!decoded) return;
+    appliedRef.current = true;
+    setInvoice(decoded);
+    const next = new URLSearchParams(params.toString());
+    next.delete("s");
+    const qs = next.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  }, [params, setInvoice, router, pathname]);
+
   return (
     <div className="fixed inset-0 top-14 flex flex-col md:flex-row overflow-hidden bg-background">
       {/* Left Panel - Form */}
