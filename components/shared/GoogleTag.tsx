@@ -1,5 +1,3 @@
-"use client";
-
 import Script from "next/script";
 
 export function GoogleTag() {
@@ -11,9 +9,10 @@ export function GoogleTag() {
     <>
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${gtagId}`}
-        strategy="lazyOnload"
+        strategy="beforeInteractive"
+        async
       />
-      <Script id="gtag-init" strategy="lazyOnload">
+      <Script id="gtag-init" strategy="beforeInteractive">
         {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
@@ -22,4 +21,3 @@ gtag('config', '${gtagId}');`}
     </>
   );
 }
-
