@@ -1,0 +1,109 @@
+"use client";
+
+import { useInvoiceStore } from "@/store/invoice.store";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus, Trash2 } from "lucide-react";
+import { calculateLineItemAmount } from "@/lib/invoice-calculator";
+
+export function LineItemsTable() {
+  const { invoice, updateInvoice } = useInvoiceStore();
+
+  const addItem = () => {
+    const newItem = {
+      id: crypto.randomUUID(),
+      description: "",
+      quantity: 1,
+      unitPrice: 0,
+      amount: 0,
+    };
+    updateInvoice({ lineItems: [...(invoice.lineItems || []), newItem] });
+  };
+
+  const removeItem = (index: number) => {
+    const updatedItems = [...(invoice.lineItems || [])];
+    updatedItems.splice(index, 1);
+    updateInvoice({ lineItems: updatedItems });
+  };
+
+  const updateItem = (index: number, field: string, value: any) => {
+    const updatedItems = [...(invoice.lineItems || [])];
+    const item = { ...updatedItems[index], [field]: value };
+    item.amount = calculateLineItemAmount(item);
+    updatedItems[index] = item;
+    updateInvoice({ lineItems: updatedItems });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[600px] text-sm">
+          <thead>
+            <tr className="border-b border-border/50 text-muted-foreground text-left">
+              <th className="pb-2 font-medium w-[45%]">Item Description</th>
+              <th className="pb-2 font-medium w-[15%] text-right">Qty</th>
+              <th className="pb-2 font-medium w-[15%] text-right">Price</th>
+              <th className="pb-2 font-medium w-[15%] text-right">Amount</th>
+              <th className="pb-2 font-medium w-[10%]"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/50">
+            {invoice.lineItems?.map((item, index) => (
+              <tr key={item.id || index}>
+                <td className="py-2 pr-2">
+                  <Input
+                    placeholder="Description"
+                    value={item.description}
+                    onChange={(e) => updateItem(index, "description", e.target.value)}
+                  />
+                </td>
+                <td className="py-2 px-2">
+                  <Input
+                    type="number"
+                    min="0"
+                    step="1"
+                    className="text-right"
+                    value={item.quantity}
+                    onChange={(e) => updateItem(index, "quantity", Number(e.target.value))}
+                  />
+                </td>
+                <td className="py-2 px-2">
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    className="text-right"
+                    value={item.unitPrice}
+                    onChange={(e) => updateItem(index, "unitPrice", Number(e.target.value))}
+                  />
+                </td>
+                <td className="py-2 pl-2 text-right font-medium">
+                  {invoice.currency} {item.amount?.toFixed(2) || "0.00"}
+                </td>
+                <td className="py-2 pl-2 text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => removeItem(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full border-dashed"
+        onClick={addItem}
+      >
+        <Plus className="mr-2 h-4 w-4" />
+        Add Item
+      </Button>
+    </div>
+  );
+}
