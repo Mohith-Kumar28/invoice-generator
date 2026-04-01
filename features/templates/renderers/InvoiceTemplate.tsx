@@ -2,6 +2,7 @@ import React from "react";
 import { Document, Image, Link, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Invoice } from "@/types/invoice.types";
 import type { TemplateKey } from "./index";
+import { APP_NAME, SITE_URL } from "@/lib/site";
 
 type Variant = TemplateKey;
 
@@ -755,8 +756,8 @@ export function InvoiceTemplate({
             <View style={styles.bottomCol}>
               {invoice.showWatermark ? (
                 <View style={{ alignItems: "flex-end" }}>
-                  <Link src="https://invoiceforge.app" style={styles.bottomLink}>
-                    Powered by InvoiceForge
+                  <Link src={SITE_URL} style={styles.bottomLink}>
+                    Powered by {APP_NAME}
                   </Link>
                 </View>
               ) : (

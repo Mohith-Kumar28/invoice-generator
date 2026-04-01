@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { GoogleAnalytics } from "@/components/shared/GoogleAnalytics";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { Header } from "@/components/layout/Header";
+import { APP_NAME } from "@/lib/site";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "InvoiceForge - Free Online Invoice Generator",
+  title: `${APP_NAME} - Free Online Invoice Generator`,
   description: "Create stunning invoices in seconds. Free forever.",
 };
 
@@ -29,6 +31,7 @@ export default function RootLayout({
         >
           <Header />
           <main className="flex-1 flex flex-col">{children}</main>
+          <GoogleAnalytics />
         </ThemeProvider>
       </body>
     </html>

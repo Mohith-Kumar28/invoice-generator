@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { FileText } from 'lucide-react';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
+import { APP_NAME } from '@/lib/site';
 
 export function Header() {
   return (
@@ -9,7 +10,7 @@ export function Header() {
         <Link href="/" className="flex items-center space-x-2">
           <FileText className="h-6 w-6 text-primary" />
           <span className="font-bold inline-block">
-            InvoiceForge
+            {APP_NAME}
           </span>
         </Link>
         

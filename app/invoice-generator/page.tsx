@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { InvoiceGeneratorClient } from "./InvoiceGeneratorClient";
+import { APP_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Invoice Generator | InvoiceForge",
+  title: `Invoice Generator | ${APP_NAME}`,
   description: "Create a professional invoice in minutes, export to PDF, and keep your data local-first in your browser.",
 };
 

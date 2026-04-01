@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { APP_NAME } from "@/lib/site";
 import {
   ArrowRight,
   BadgeCheck,
@@ -34,7 +35,7 @@ export default function HomePage() {
               Free • Local-first • No signup
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              InvoiceForge <span className="text-muted-foreground">— Free Invoice Generator</span>
+              {APP_NAME} <span className="text-muted-foreground">— Free Invoice Generator</span>
             </h1>
             <p className="text-muted-foreground md:text-lg">
               Create clean, professional invoices in minutes. Customize the look, export a PDF, and keep your data on your device.
@@ -142,7 +143,7 @@ export default function HomePage() {
           </div>
           <Accordion className="w-full">
             <AccordionItem value="item-1">
-              <AccordionTrigger>Is InvoiceForge free?</AccordionTrigger>
+              <AccordionTrigger>Is {APP_NAME} free?</AccordionTrigger>
               <AccordionContent>
                 Yes. You can create invoices and export PDFs without paying or creating an account.
               </AccordionContent>
@@ -150,7 +151,7 @@ export default function HomePage() {
             <AccordionItem value="item-2">
               <AccordionTrigger>Where is my data stored?</AccordionTrigger>
               <AccordionContent>
-                In your browser storage. InvoiceForge does not send your invoice data to a backend for storage.
+                In your browser storage. {APP_NAME} does not send your invoice data to a backend for storage.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
@@ -168,7 +169,7 @@ export default function HomePage() {
             <AccordionItem value="item-5">
               <AccordionTrigger>How does UPI QR work?</AccordionTrigger>
               <AccordionContent>
-                When you select UPI payment and enter a UPI ID, InvoiceForge generates a QR with a upi://pay link so a UPI app can open and prefill the amount.
+                When you select UPI payment and enter a UPI ID, {APP_NAME} generates a QR with a upi://pay link so a UPI app can open and prefill the amount.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
