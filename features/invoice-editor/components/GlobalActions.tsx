@@ -16,6 +16,7 @@ export function GlobalActions() {
   const { invoice, resetInvoice, updateInvoice, setErrors, clearErrors } = useInvoiceStore();
   const { saveInvoice } = useSavedInvoicesStore();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [resetOpen, setResetOpen] = useState(false);
 
   useEffect(() => {
     if (!invoice.id) {
@@ -132,7 +133,7 @@ export function GlobalActions() {
             </>
           )}
         </div>
-        <Dialog>
+        <Dialog open={resetOpen} onOpenChange={setResetOpen}>
           <DialogTrigger render={
             <Button variant="outline">
               <RotateCcw className="h-4 w-4 sm:mr-2" />
@@ -150,12 +151,14 @@ export function GlobalActions() {
               <DialogClose render={<Button variant="outline" />}>
                 Cancel
               </DialogClose>
-              <DialogClose
-                render={<Button variant="destructive" />}
-                onClick={() => resetInvoice()}
+              <Button
+                onClick={() => {
+                  resetInvoice();
+                  setResetOpen(false);
+                }}
               >
                 Reset
-              </DialogClose>
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
