@@ -19,13 +19,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const analyticsMode = process.env.NEXT_PUBLIC_ANALYTICS_MODE;
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
   const gtagId = process.env.NEXT_PUBLIC_GTAG_ID || "G-WL85BW3HTX";
-  const useGtm = Boolean(gtmId);
+  const useGtm = analyticsMode === "gtm" && Boolean(gtmId);
+  const useGtag = analyticsMode !== "gtm";
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>{useGtm ? null : <GoogleTag gtagId={gtagId} />}</head>
+      <head>{useGtag ? <GoogleTag gtagId={gtagId} /> : null}</head>
       <body
         className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
