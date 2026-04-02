@@ -61,6 +61,7 @@ export interface Invoice {
 
   // Section 7: Notes & Terms
   notes?: string; // visible on invoice
+  deliverables?: string; // newline-separated
   terms?: string; // terms & conditions
 
   // Section 8: Signature
@@ -76,6 +77,7 @@ export interface Invoice {
   colorTheme: string;
   fontPairing: string;
   showLogo: boolean;
+  showRibbon: boolean;
   showFooter: boolean;
   showPageNumbers: boolean;
   showWatermark: boolean;

@@ -3,8 +3,10 @@
 import { useInvoiceStore } from "@/store/invoice.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { calculateLineItemAmount } from "@/lib/invoice-calculator";
+import { formatMoney } from "@/lib/format";
 
 export function LineItemsTable() {
   const { invoice, updateInvoice, errors } = useInvoiceStore();
@@ -46,7 +48,7 @@ export function LineItemsTable() {
         <table className="w-full min-w-[600px] text-sm">
           <thead>
             <tr className="border-b border-border/50 text-muted-foreground text-left">
-              <th className="pb-2 font-medium w-[45%]">Item Description</th>
+              <th className="pb-2 font-medium w-[45%]">Item</th>
               <th className="pb-2 font-medium w-[15%] text-right">Qty</th>
               <th className="pb-2 font-medium w-[15%] text-right">Price</th>
               <th className="pb-2 font-medium w-[15%] text-right">Amount</th>
@@ -57,11 +59,20 @@ export function LineItemsTable() {
             {invoice.lineItems?.map((item, index) => (
               <tr key={item.id || index}>
                 <td className="py-2 pr-2">
-                  <Input
-                    placeholder="Description"
-                    value={item.description}
-                    onChange={(e) => updateItem(index, "description", e.target.value)}
-                  />
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Item name"
+                      value={item.description}
+                      onChange={(e) => updateItem(index, "description", e.target.value)}
+                    />
+                    <Textarea
+                      placeholder="Description (optional)"
+                      rows={2}
+                      className="min-h-[64px] resize-y"
+                      value={item.details || ""}
+                      onChange={(e) => updateItem(index, "details", e.target.value)}
+                    />
+                  </div>
                 </td>
                 <td className="py-2 px-2">
                   <Input
@@ -84,7 +95,7 @@ export function LineItemsTable() {
                   />
                 </td>
                 <td className="py-2 pl-2 text-right font-medium">
-                  {invoice.currency} {item.amount?.toFixed(2) || "0.00"}
+                  {formatMoney(item.amount || 0, invoice.currency)}
                 </td>
                 <td className="py-2 pl-2 text-right">
                   <Button

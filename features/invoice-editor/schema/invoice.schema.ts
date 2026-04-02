@@ -109,6 +109,7 @@ export const invoiceSchema = z.object({
   amountDue: z.number(),
 
   notes: z.string().optional(),
+  deliverables: z.string().optional(),
   terms: z.string().optional(),
   signature: z.string().optional(),
   attachments: z.array(z.object({

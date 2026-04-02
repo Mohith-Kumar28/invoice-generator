@@ -66,8 +66,8 @@ export function GlobalActions() {
       
       setTimeout(() => {
         setSaveStatus("idle");
-      }, 2000);
-    }, 2000);
+      }, 5000);
+    }, 5000);
 
     return () => clearTimeout(timeoutId);
   }, [invoice, saveInvoice, updateInvoice]);
@@ -84,7 +84,6 @@ export function GlobalActions() {
     if (!invoice.dueDate) nextErrors.dueDate = "Due date is required.";
     if (!invoice.currency) nextErrors.currency = "Currency is required.";
     if (!invoice.from?.businessName?.trim()) nextErrors["from.businessName"] = "Business name is required.";
-    if (!hasEmail) nextErrors["from.email"] = "Email is required.";
     if (hasEmail && !emailOk) nextErrors["from.email"] = "Enter a valid email.";
     if (!invoice.to?.businessName?.trim()) nextErrors["to.businessName"] = "Client business name is required.";
 
@@ -127,14 +126,39 @@ export function GlobalActions() {
         accent: resolveCssVarColor("--accent") || "rgb(55, 65, 81)",
       };
       const blob = await pdf(<SelectedTemplate invoice={{ ...invoice, pdfBrand }} />).toBlob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
       const base =
         (invoice.pdfFileName && invoice.pdfFileName.trim()) ||
         `${invoice.invoiceNumber || "invoice"}_${invoice.to?.businessName || "client"}`;
       const safe = base.trim().replace(/[\\/:*?"<>|]+/g, "-");
-      link.download = safe.toLowerCase().endsWith(".pdf") ? safe : `${safe}.pdf`;
+      const fileName = safe.toLowerCase().endsWith(".pdf") ? safe : `${safe}.pdf`;
+
+      const navAny = navigator as any;
+      const file = new File([blob], fileName, { type: "application/pdf" });
+      const canShareFiles = typeof navAny !== "undefined" && typeof navAny.canShare === "function" && navAny.canShare({ files: [file] });
+
+      if (typeof navAny !== "undefined" && typeof navAny.share === "function" && canShareFiles) {
+        await navAny.share({ files: [file], title: fileName });
+        return;
+      }
+
+      const ua = typeof navigator !== "undefined" ? navigator.userAgent || "" : "";
+      const isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.includes("Mac") && typeof (navigator as any).maxTouchPoints === "number" && (navigator as any).maxTouchPoints > 1);
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.rel = "noopener noreferrer";
+
+      if (isIOS) {
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 30_000);
+        return;
+      }
+
       document.body.appendChild(link);
       setTimeout(() => {
         link.click();

@@ -5,6 +5,7 @@ import { useInvoiceStore } from "@/store/invoice.store";
 import { format } from "date-fns";
 import { Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatMoney } from "@/lib/format";
 
 export function InvoiceList({ onSelect }: { onSelect?: () => void }) {
   const { invoices, deleteInvoice, clearAllInvoices } = useSavedInvoicesStore();
@@ -46,7 +47,7 @@ export function InvoiceList({ onSelect }: { onSelect?: () => void }) {
                 {inv.title && <p className="text-xs text-muted-foreground/70 mt-1 line-clamp-1">{inv.title}</p>}
               </div>
               <div className="text-right">
-                <p className="font-bold text-base text-foreground">{inv.currency} {inv.total?.toFixed(2) || "0.00"}</p>
+                <p className="font-bold text-base text-foreground">{formatMoney(inv.total || 0, inv.currency)}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">{inv.issueDate ? format(new Date(inv.issueDate), 'MMM d, yyyy') : 'No Date'}</p>
               </div>
             </div>

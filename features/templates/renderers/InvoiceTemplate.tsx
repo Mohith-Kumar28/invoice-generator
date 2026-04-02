@@ -1,10 +1,50 @@
 import React from "react";
-import { Document, Image, Link, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Document, Font, Image, Link, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Invoice } from "@/types/invoice.types";
 import type { TemplateKey } from "./index";
 import { APP_NAME, SITE_URL } from "@/lib/site";
+import { formatMoneyPdf, formatNumber } from "@/lib/format";
 
 type Variant = TemplateKey;
+
+let registered = false;
+function ensureFont() {
+  if (registered) return;
+  const origin =
+    typeof globalThis !== "undefined" &&
+    (globalThis as any).location &&
+    typeof (globalThis as any).location.origin === "string"
+      ? (globalThis as any).location.origin
+      : "";
+  const regularSrc = origin ? `${origin}/fonts/NotoSans-Regular.ttf` : "/fonts/NotoSans-Regular.ttf";
+  const boldSrc = origin ? `${origin}/fonts/NotoSans-Bold.ttf` : "/fonts/NotoSans-Bold.ttf";
+  const italicSrc = origin ? `${origin}/fonts/NotoSans-Italic.ttf` : "/fonts/NotoSans-Italic.ttf";
+  const boldItalicSrc = origin ? `${origin}/fonts/NotoSans-BoldItalic.ttf` : "/fonts/NotoSans-BoldItalic.ttf";
+  Font.register({
+    family: "NotoSans",
+    fonts: [
+      {
+        src: regularSrc,
+        fontWeight: 400,
+      },
+      {
+        src: italicSrc,
+        fontWeight: 400,
+        fontStyle: "italic",
+      },
+      {
+        src: boldSrc,
+        fontWeight: 700,
+      },
+      {
+        src: boldItalicSrc,
+        fontWeight: 700,
+        fontStyle: "italic",
+      },
+    ],
+  });
+  registered = true;
+}
 
 type StyleTokens = {
   headerMode: "band" | "plain";
@@ -227,16 +267,20 @@ export function InvoiceTemplate({
   invoice: Partial<Invoice>;
   variant: Variant;
 }) {
+  ensureFont();
   const themeColor = invoice.colorTheme || "#1a365d";
   const t = getTokens(variant, themeColor);
   const brand = deriveBrandColors(themeColor);
   const stripe = invoice.pdfBrand || brand;
 
-  const hasNotes = !!invoice.notes;
-  const hasTerms = !!invoice.terms;
+  const hasNotes = !!String(invoice.notes || "").trim();
+  const hasDeliverables = !!String(invoice.deliverables || "").trim();
+  const hasTerms = !!String(invoice.terms || "").trim();
   const bank = invoice.bankDetails;
   const paymentMode = (invoice.paymentMode ||
     (invoice.paymentLink ? "url" : (bank?.upi && !bank?.accountNumber && !bank?.iban) ? "upi" : "bank")) as "upi" | "bank" | "url";
+  const lineItems = invoice.lineItems || [];
+  const hasItemDetails = lineItems.some((i) => !!String((i as any)?.details || "").trim());
   const hasBank = !!(
     bank?.bankName ||
     bank?.accountName ||
@@ -258,16 +302,17 @@ export function InvoiceTemplate({
     page: {
       flexDirection: "column",
       backgroundColor: t.pageBg,
-      fontFamily: "Helvetica",
-      paddingTop: 12,
+      fontFamily: "NotoSans",
+      paddingTop: 8,
     },
     topStripe: {
       position: "absolute",
       top: 0,
       left: 0,
       right: 0,
-      height: 12,
+      height: 4,
       flexDirection: "row",
+      opacity: 0.55,
     },
     stripePrimary: { flex: 6 },
     stripeSecondary: { flex: 3 },
@@ -311,7 +356,7 @@ export function InvoiceTemplate({
     statusText: { fontSize: 9, fontWeight: 700 },
     content: {
       padding: 32,
-      paddingBottom: 72,
+      paddingBottom: 56,
     },
     section: {
       flexDirection: "row",
@@ -346,10 +391,7 @@ export function InvoiceTemplate({
       paddingBottom: 8,
       marginBottom: 10,
     },
-    col1: { width: "46%" },
-    col2: { width: "18%", textAlign: "right" },
-    col3: { width: "18%", textAlign: "right" },
-    col4: { width: "18%", textAlign: "right" },
+    colRight: { textAlign: "right" },
     th: {
       fontSize: 10,
       fontWeight: 700,
@@ -417,6 +459,22 @@ export function InvoiceTemplate({
     kvVal: { fontSize: 10, color: t.bodyText, textAlign: "right" },
     qrBox: { marginTop: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
     qrImage: { width: 96, height: 96, objectFit: "contain" },
+    noteBox: {
+      backgroundColor: "#FFFEFB",
+      borderRadius: 3,
+      padding: 12,
+    },
+    deliverablesBox: {
+      backgroundColor: "#F9FAFB",
+      borderRadius: 3,
+      padding: 12,
+    },
+    termsBox: {
+      backgroundColor: "#F7F8FA",
+      borderRadius: 3,
+      padding: 12,
+    },
+    termsBody: { fontSize: 9.5, color: t.mutedText, lineHeight: 1.35, fontStyle: "italic" },
   });
 
   const Header = (
@@ -465,11 +523,13 @@ export function InvoiceTemplate({
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View fixed style={styles.topStripe}>
-          <View style={[styles.stripePrimary, { backgroundColor: stripe.primary }]} />
-          <View style={[styles.stripeSecondary, { backgroundColor: stripe.secondary }]} />
-          <View style={[styles.stripeAccent, { backgroundColor: stripe.accent }]} />
-        </View>
+        {invoice.showRibbon !== false ? (
+          <View fixed style={styles.topStripe}>
+            <View style={[styles.stripePrimary, { backgroundColor: stripe.primary }]} />
+            <View style={[styles.stripeSecondary, { backgroundColor: stripe.secondary }]} />
+            <View style={[styles.stripeAccent, { backgroundColor: stripe.accent }]} />
+          </View>
+        ) : null}
         {Header}
 
         <View style={styles.content}>
@@ -477,9 +537,7 @@ export function InvoiceTemplate({
             <View style={styles.addressBox}>
               <Text style={styles.label}>From</Text>
               <View style={styles.addressRow}>
-                {invoice.showLogo !== false && invoice.from?.logo && (
-                  <Image src={invoice.from.logo} style={styles.addressLogo} />
-                )}
+                {invoice.from?.logo ? <Image src={invoice.from.logo} style={styles.addressLogo} /> : null}
                 <View style={styles.addressCol}>
                   <Text style={styles.businessName}>{invoice.from?.businessName}</Text>
                   {!!invoice.from?.contactName && <Text style={styles.addressText}>{invoice.from.contactName}</Text>}
@@ -498,9 +556,7 @@ export function InvoiceTemplate({
             <View style={styles.addressBox}>
               <Text style={styles.label}>To</Text>
               <View style={styles.addressRow}>
-                {invoice.showLogo !== false && invoice.to?.logo && (
-                  <Image src={invoice.to.logo} style={styles.addressLogo} />
-                )}
+                {invoice.to?.logo ? <Image src={invoice.to.logo} style={styles.addressLogo} /> : null}
                 <View style={styles.addressCol}>
                   <Text style={styles.businessName}>{invoice.to?.businessName}</Text>
                   {!!invoice.to?.contactName && <Text style={styles.addressText}>{invoice.to.contactName}</Text>}
@@ -519,23 +575,28 @@ export function InvoiceTemplate({
 
           <View style={styles.table}>
             <View style={styles.tableHeader}>
-              <Text style={[styles.col1, styles.th]}>Description</Text>
-              <Text style={[styles.col2, styles.th]}>Qty</Text>
-              <Text style={[styles.col3, styles.th]}>Price</Text>
-              <Text style={[styles.col4, styles.th]}>Amount</Text>
+              <Text style={[{ width: hasItemDetails ? "28%" : "46%" }, styles.th]}>Name</Text>
+              {hasItemDetails ? <Text style={[{ width: "26%" }, styles.th]}>Description</Text> : null}
+              <Text style={[{ width: hasItemDetails ? "14%" : "18%" }, styles.th, styles.colRight]}>Qty</Text>
+              <Text style={[{ width: hasItemDetails ? "16%" : "18%" }, styles.th, styles.colRight]}>Price</Text>
+              <Text style={[{ width: hasItemDetails ? "16%" : "18%" }, styles.th, styles.colRight]}>Amount</Text>
             </View>
-            {(invoice.lineItems || []).map((item, i) => (
+            {lineItems.map((item, i) => (
               <View key={i} style={styles.tr}>
-                <Text style={[styles.col1, styles.td]}>
-                  {item.description}
-                  {item.details ? `\n${item.details}` : ""}
-                </Text>
-                <Text style={[styles.col2, styles.td]}>
-                  {item.quantity}
+                <Text style={[{ width: hasItemDetails ? "28%" : "46%" }, styles.td]}>{item.description}</Text>
+                {hasItemDetails ? (
+                  <Text style={[{ width: "26%" }, styles.td]}>{String(item.details || "")}</Text>
+                ) : null}
+                <Text style={[{ width: hasItemDetails ? "14%" : "18%" }, styles.td, styles.colRight]}>
+                  {formatNumber(item.quantity)}
                   {item.unit ? ` ${item.unit}` : ""}
                 </Text>
-                <Text style={[styles.col3, styles.td]}>{item.unitPrice}</Text>
-                <Text style={[styles.col4, styles.td]}>{item.amount?.toFixed(2)}</Text>
+                <Text style={[{ width: hasItemDetails ? "16%" : "18%" }, styles.td, styles.colRight]}>
+                  {formatMoneyPdf(item.unitPrice, invoice.currency)}
+                </Text>
+                <Text style={[{ width: hasItemDetails ? "16%" : "18%" }, styles.td, styles.colRight]}>
+                  {formatMoneyPdf(item.amount || 0, invoice.currency)}
+                </Text>
               </View>
             ))}
           </View>
@@ -543,16 +604,12 @@ export function InvoiceTemplate({
           <View style={styles.totals}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Subtotal</Text>
-              <Text style={styles.totalValue}>
-                {invoice.currency} {invoice.subtotal?.toFixed(2)}
-              </Text>
+              <Text style={styles.totalValue}>{formatMoneyPdf(invoice.subtotal, invoice.currency)}</Text>
             </View>
             {!!invoice.discountAmount && (
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Discount</Text>
-                <Text style={styles.totalValue}>
-                  -{invoice.currency} {invoice.discountAmount?.toFixed(2)}
-                </Text>
+                <Text style={styles.totalValue}>-{formatMoneyPdf(invoice.discountAmount, invoice.currency)}</Text>
               </View>
             )}
             {(invoice.taxLines || []).map((tax, idx) => (
@@ -560,93 +617,103 @@ export function InvoiceTemplate({
                 <Text style={styles.totalLabel}>
                   {tax.name} ({tax.rate}%)
                 </Text>
-                <Text style={styles.totalValue}>
-                  {invoice.currency} {(tax.amount || 0).toFixed(2)}
-                </Text>
+                <Text style={styles.totalValue}>{formatMoneyPdf(tax.amount || 0, invoice.currency)}</Text>
               </View>
             ))}
             {!!invoice.shippingFee && (
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Shipping</Text>
-                <Text style={styles.totalValue}>
-                  {invoice.currency} {(invoice.shippingFee || 0).toFixed(2)}
-                </Text>
+                <Text style={styles.totalValue}>{formatMoneyPdf(invoice.shippingFee || 0, invoice.currency)}</Text>
               </View>
             )}
             <View style={styles.grandTotalRow}>
               <Text style={styles.grandTotalLabel}>Total</Text>
               <Text style={[styles.grandTotalValue, { color: themeColor }]}>
-                {invoice.currency} {invoice.total?.toFixed(2)}
+                {formatMoneyPdf(invoice.total, invoice.currency)}
               </Text>
             </View>
             {!!invoice.amountPaid && (
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Amount Paid</Text>
-                <Text style={styles.totalValue}>
-                  -{invoice.currency} {(invoice.amountPaid || 0).toFixed(2)}
-                </Text>
+                <Text style={styles.totalValue}>-{formatMoneyPdf(invoice.amountPaid || 0, invoice.currency)}</Text>
               </View>
             )}
             {!!invoice.amountPaid && (
               <View style={[styles.grandTotalRow, { borderTopWidth: 1, borderTopColor: t.divider }]}>
                 <Text style={styles.grandTotalLabel}>Amount Due</Text>
                 <Text style={[styles.grandTotalValue, { color: themeColor }]}>
-                  {invoice.currency} {(invoice.amountDue || 0).toFixed(2)}
+                  {formatMoneyPdf(invoice.amountDue || 0, invoice.currency)}
                 </Text>
               </View>
             )}
           </View>
         </View>
 
-        {(hasNotes || hasTerms || hasPayment || hasSignature) && (
-          <View
-            wrap={false}
-            style={{ paddingHorizontal: 40, marginTop: 24, marginBottom: 72, flexDirection: "row", justifyContent: "space-between" }}
-          >
-            {(hasNotes || hasTerms || hasSignature) && (
-              <View style={{ width: hasPayment ? "48%" : "100%" }}>
-                {hasNotes && (
-                  <View style={{ marginBottom: 14 }}>
-                    <Text style={styles.blockTitle}>Notes</Text>
-                    <Text style={styles.addressText}>{invoice.notes}</Text>
-                  </View>
-                )}
-                {hasTerms && (
-                  <View>
-                    <Text style={styles.blockTitle}>Terms</Text>
-                    <Text style={styles.addressText}>{invoice.terms}</Text>
-                  </View>
-                )}
-                {hasSignature && (
-                  <View wrap={false} style={{ marginTop: hasNotes || hasTerms ? 14 : 0 }}>
-                    <Text style={styles.blockTitle}>Signature</Text>
-                    <View style={{ marginTop: 6 }}>
-                      {(() => {
-                        const mode = invoice.signatureMode;
-                        if (mode === "type") {
+        {(hasNotes || hasTerms || hasDeliverables || hasPayment || hasSignature) && (
+          <View style={{ paddingHorizontal: 40, marginTop: 12, marginBottom: 56 }}>
+            {hasPayment ? (
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <View style={{ width: "48%" }}>
+                  {hasNotes ? (
+                    <View style={{ marginBottom: 14 }}>
+                      <View style={styles.noteBox}>
+                        <Text style={[styles.blockTitle, { color: "#111827", marginBottom: 6 }]}>Notes</Text>
+                        <Text style={[styles.addressText, { color: "#111827" }]}>{String(invoice.notes || "")}</Text>
+                      </View>
+                    </View>
+                  ) : null}
+                  {hasDeliverables ? (
+                    <View style={{ marginBottom: 14 }}>
+                      <View style={styles.deliverablesBox}>
+                        <Text style={[styles.blockTitle, { marginBottom: 6 }]}>Deliverables</Text>
+                        {String(invoice.deliverables || "")
+                          .split(/\r?\n/g)
+                          .map((s) => s.replace(/^\s*[-*]\s*/, "").trim())
+                          .filter(Boolean)
+                          .map((d, idx) => (
+                            <Text key={idx} style={styles.addressText}>
+                              • {d}
+                            </Text>
+                          ))}
+                      </View>
+                    </View>
+                  ) : null}
+                  {hasTerms ? (
+                    <View style={{ marginBottom: 14 }}>
+                      <View style={styles.termsBox}>
+                        <Text style={[styles.blockTitle, { marginBottom: 6 }]}>Terms & Conditions</Text>
+                        <Text style={styles.termsBody}>{String(invoice.terms || "")}</Text>
+                      </View>
+                    </View>
+                  ) : null}
+                  {hasSignature ? (
+                    <View wrap={false} style={{ marginTop: hasNotes || hasTerms || hasDeliverables ? 40 : 16 }}>
+                      <Text style={styles.blockTitle}>Signature</Text>
+                      <View style={{ marginTop: 18 }}>
+                        {(() => {
+                          const mode = invoice.signatureMode;
+                          if (mode === "type") {
+                            return invoice.signatureTyped ? (
+                              <Text style={[styles.addressText, { fontSize: 16, fontStyle: "italic", color: t.bodyText }]}>
+                                {invoice.signatureTyped}
+                              </Text>
+                            ) : null;
+                          }
+                          if (invoice.signature) return <Image src={invoice.signature} style={styles.signatureImage} />;
                           return invoice.signatureTyped ? (
                             <Text style={[styles.addressText, { fontSize: 16, fontStyle: "italic", color: t.bodyText }]}>
                               {invoice.signatureTyped}
                             </Text>
                           ) : null;
-                        }
-                        if (invoice.signature) return <Image src={invoice.signature} style={styles.signatureImage} />;
-                        return invoice.signatureTyped ? (
-                          <Text style={[styles.addressText, { fontSize: 16, fontStyle: "italic", color: t.bodyText }]}>
-                            {invoice.signatureTyped}
-                          </Text>
-                        ) : null;
-                      })()}
+                        })()}
+                      </View>
+                      <View style={styles.divider} />
+                      <Text style={styles.addressText}>{invoice.signatureRole || ""}</Text>
                     </View>
-                    <View style={styles.divider} />
-                    <Text style={styles.addressText}>{invoice.signatureRole || ""}</Text>
-                  </View>
-                )}
-              </View>
-            )}
-            {hasPayment && (
-              <View style={{ width: hasNotes || hasTerms || hasSignature ? "48%" : "100%" }}>
-                {hasPayment && (
+                  ) : null}
+                </View>
+
+                <View style={{ width: "48%" }}>
                   <View>
                     <Text style={styles.blockTitle}>Payment</Text>
                     {!!(invoice.paymentMethods && invoice.paymentMethods.length) && (
@@ -726,14 +793,74 @@ export function InvoiceTemplate({
                       <View style={styles.qrBox}>
                         <View style={{ flex: 1, paddingRight: 10 }}>
                           <Text style={styles.addressText}>
-                            Scan to pay {invoice.currency} {((invoice.amountDue ?? invoice.total) || 0).toFixed(2)}
+                            Scan to pay {formatMoneyPdf(((invoice.amountDue ?? invoice.total) || 0) as any, invoice.currency)}
                           </Text>
                         </View>
                         <Image src={(invoice as any).upiQr} style={styles.qrImage} />
                       </View>
                     )}
                   </View>
-                )}
+                </View>
+              </View>
+            ) : (
+              <View>
+                {hasNotes ? (
+                  <View style={{ marginBottom: 14 }}>
+                    <View style={styles.noteBox}>
+                      <Text style={[styles.blockTitle, { color: "#111827", marginBottom: 6 }]}>Notes</Text>
+                      <Text style={[styles.addressText, { color: "#111827" }]}>{String(invoice.notes || "")}</Text>
+                    </View>
+                  </View>
+                ) : null}
+                {hasDeliverables ? (
+                  <View style={{ marginBottom: 14 }}>
+                    <View style={styles.deliverablesBox}>
+                      <Text style={[styles.blockTitle, { marginBottom: 6 }]}>Deliverables</Text>
+                      {String(invoice.deliverables || "")
+                        .split(/\r?\n/g)
+                        .map((s) => s.replace(/^\s*[-*]\s*/, "").trim())
+                        .filter(Boolean)
+                        .map((d, idx) => (
+                          <Text key={idx} style={styles.addressText}>
+                            • {d}
+                          </Text>
+                        ))}
+                    </View>
+                  </View>
+                ) : null}
+                {hasTerms ? (
+                  <View style={{ marginBottom: 14 }}>
+                    <View style={styles.termsBox}>
+                      <Text style={[styles.blockTitle, { marginBottom: 6 }]}>Terms & Conditions</Text>
+                      <Text style={styles.termsBody}>{String(invoice.terms || "")}</Text>
+                    </View>
+                  </View>
+                ) : null}
+                {hasSignature ? (
+                  <View wrap={false} style={{ marginTop: hasNotes || hasTerms || hasDeliverables ? 40 : 16 }}>
+                    <Text style={styles.blockTitle}>Signature</Text>
+                    <View style={{ marginTop: 18 }}>
+                      {(() => {
+                        const mode = invoice.signatureMode;
+                        if (mode === "type") {
+                          return invoice.signatureTyped ? (
+                            <Text style={[styles.addressText, { fontSize: 16, fontStyle: "italic", color: t.bodyText }]}>
+                              {invoice.signatureTyped}
+                            </Text>
+                          ) : null;
+                        }
+                        if (invoice.signature) return <Image src={invoice.signature} style={styles.signatureImage} />;
+                        return invoice.signatureTyped ? (
+                          <Text style={[styles.addressText, { fontSize: 16, fontStyle: "italic", color: t.bodyText }]}>
+                            {invoice.signatureTyped}
+                          </Text>
+                        ) : null;
+                      })()}
+                    </View>
+                    <View style={styles.divider} />
+                    <Text style={styles.addressText}>{invoice.signatureRole || ""}</Text>
+                  </View>
+                ) : null}
               </View>
             )}
           </View>

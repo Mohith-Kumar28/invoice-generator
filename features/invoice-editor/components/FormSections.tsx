@@ -15,6 +15,8 @@ import { TemplateKey } from "@/features/templates/renderers";
 import { Plus, RefreshCcw, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { currencies } from "@/lib/currencies";
+import { formatMoney } from "@/lib/format";
 import {
   Table,
   TableBody,
@@ -264,16 +266,19 @@ export function Section1Details() {
           value={invoice.currency || "INR"}
           onValueChange={(val) => updateInvoice({ currency: val || "INR" })}
         >
-          <SelectTrigger id="currencyField" aria-invalid={!!errors.currency}>
+          <SelectTrigger id="currencyField" className="w-full" aria-invalid={!!errors.currency}>
             <SelectValue placeholder="Currency" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="INR">🇮🇳 INR</SelectItem>
-            <SelectItem value="USD">🇺🇸 USD</SelectItem>
-            <SelectItem value="EUR">🇪🇺 EUR</SelectItem>
-            <SelectItem value="GBP">🇬🇧 GBP</SelectItem>
-            <SelectItem value="AUD">🇦🇺 AUD</SelectItem>
-            <SelectItem value="CAD">🇨🇦 CAD</SelectItem>
+            {currencies.map((c) => (
+              <SelectItem key={c.code} value={c.code}>
+                <span className="flex w-full items-center justify-between gap-3">
+                  <span className="truncate">
+                    {c.symbol} {c.code} — {c.name}
+                  </span>
+                </span>
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <FieldError message={errors.currency} />
@@ -374,7 +379,7 @@ export function Section2From() {
         />
       </div>
       <div className="space-y-2">
-        <ReqLabel htmlFor="fromEmail">Email</ReqLabel>
+        <Label htmlFor="fromEmail">Email</Label>
         <Input
           id="fromEmail"
           type="email"
@@ -609,7 +614,7 @@ export function Section5Pricing() {
             }}>
               <SelectTrigger className="w-[180px]">
                 <div className="flex items-center gap-2">
-                  <Plus className="h-4 w-4 text-muted-foreground" />
+                  <Plus className="h-4 w-4" />
                   <SelectValue placeholder="Add tax" />
                 </div>
               </SelectTrigger>
@@ -687,20 +692,20 @@ export function Section5Pricing() {
               <div className="flex justify-between gap-6">
                 <span>Subtotal</span>
                 <span className="font-medium text-foreground">
-                  {invoice.currency} {invoice.subtotal?.toFixed(2) || "0.00"}
+                  {formatMoney(invoice.subtotal, invoice.currency)}
                 </span>
               </div>
               <div className="flex justify-between gap-6">
                 <span>Discount</span>
                 <span className="font-medium text-foreground">
-                  -{invoice.currency} {invoice.discountAmount?.toFixed(2) || "0.00"}
+                  -{formatMoney(invoice.discountAmount, invoice.currency)}
                 </span>
               </div>
               {(invoice.taxLines || []).map((t, i) => (
                 <div key={t.id || i} className="flex justify-between gap-6">
                   <span>{t.name} ({t.rate}%)</span>
                   <span className="font-medium text-foreground">
-                    {invoice.currency} {(t.amount || 0).toFixed(2)}
+                    {formatMoney(t.amount || 0, invoice.currency)}
                   </span>
                 </div>
               ))}
@@ -708,7 +713,7 @@ export function Section5Pricing() {
                 <div className="flex justify-between gap-6">
                   <span>Shipping</span>
                   <span className="font-medium text-foreground">
-                    {invoice.currency} {(invoice.shippingFee || 0).toFixed(2)}
+                    {formatMoney(invoice.shippingFee || 0, invoice.currency)}
                   </span>
                 </div>
               )}
@@ -716,12 +721,12 @@ export function Section5Pricing() {
             <div className="text-right min-w-[180px]">
               <div className="text-sm text-muted-foreground">Total</div>
               <div className="text-3xl font-bold tracking-tight">
-                {invoice.currency} {invoice.total?.toFixed(2) || "0.00"}
+                {formatMoney(invoice.total, invoice.currency)}
               </div>
               <Separator className="my-3" />
               <div className="text-sm text-muted-foreground">Amount Due</div>
               <div className="text-lg font-semibold">
-                {invoice.currency} {(invoice.amountDue || 0).toFixed(2)}
+                {formatMoney(invoice.amountDue || 0, invoice.currency)}
               </div>
             </div>
           </div>
@@ -738,6 +743,31 @@ export function Section6Payment() {
   };
   const paymentMode =
     invoice.paymentMode || (invoice.paymentLink ? "url" : invoice.bankDetails?.upi ? "upi" : "bank");
+  const setMode = (mode: "upi" | "bank" | "url") => {
+    if (mode === "upi") {
+      updateInvoice({
+        paymentMode: "upi",
+        paymentLink: "",
+        bankDetails: {
+          upi: "",
+        },
+      });
+      return;
+    }
+    if (mode === "bank") {
+      updateInvoice({
+        paymentMode: "bank",
+        paymentLink: "",
+        bankDetails: {},
+      });
+      return;
+    }
+    updateInvoice({
+      paymentMode: "url",
+      paymentLink: "",
+      bankDetails: {},
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -747,21 +777,21 @@ export function Section6Payment() {
             <Button
               size="sm"
               variant={paymentMode === "upi" ? "default" : "outline"}
-              onClick={() => updateInvoice({ paymentMode: "upi" })}
+              onClick={() => setMode("upi")}
             >
               UPI
             </Button>
             <Button
               size="sm"
               variant={paymentMode === "bank" ? "default" : "outline"}
-              onClick={() => updateInvoice({ paymentMode: "bank" })}
+              onClick={() => setMode("bank")}
             >
               Bank
             </Button>
             <Button
               size="sm"
               variant={paymentMode === "url" ? "default" : "outline"}
-              onClick={() => updateInvoice({ paymentMode: "url" })}
+              onClick={() => setMode("url")}
             >
               URL
             </Button>
@@ -863,15 +893,20 @@ export function Section7Notes() {
       <div className="space-y-2">
         <Label>Notes</Label>
         <Textarea 
-          placeholder="Thank you for your business." 
           value={invoice.notes || ""}
           onChange={(e) => updateInvoice({ notes: e.target.value })}
         />
       </div>
       <div className="space-y-2">
+        <Label>Deliverables</Label>
+        <Textarea 
+          value={invoice.deliverables || ""}
+          onChange={(e) => updateInvoice({ deliverables: e.target.value })}
+        />
+      </div>
+      <div className="space-y-2">
         <Label>Terms & Conditions</Label>
         <Textarea 
-          placeholder="Please pay within 15 days of receiving this invoice." 
           value={invoice.terms || ""}
           onChange={(e) => updateInvoice({ terms: e.target.value })}
         />
@@ -1155,8 +1190,8 @@ export function Section9Design() {
         <Label className="text-base">Display Options</Label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="flex items-center space-x-2">
-            <Switch id="showLogo" checked={invoice.showLogo ?? true} onCheckedChange={(c: boolean) => updateInvoice({ showLogo: c })} />
-            <Label htmlFor="showLogo">Logo</Label>
+            <Switch id="showRibbon" checked={invoice.showRibbon ?? true} onCheckedChange={(c: boolean) => updateInvoice({ showRibbon: c })} />
+            <Label htmlFor="showRibbon">Ribbon</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Switch id="showFooter" checked={invoice.showFooter ?? true} onCheckedChange={(c: boolean) => updateInvoice({ showFooter: c })} />

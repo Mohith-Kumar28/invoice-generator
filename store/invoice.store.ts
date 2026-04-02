@@ -58,6 +58,8 @@ function createDefaultInvoice(): Partial<Invoice> {
     paymentMode: 'upi',
     bankDetails: {},
 
+    deliverables: "",
+
     // Section 8: Signature
     showSignature: false,
 
@@ -66,6 +68,7 @@ function createDefaultInvoice(): Partial<Invoice> {
     colorTheme: '#0038e0',
     fontPairing: 'modern',
     showLogo: true,
+    showRibbon: true,
     showFooter: true,
     showPageNumbers: true,
     showWatermark: true,
@@ -111,7 +114,7 @@ export const useInvoiceStore = create<InvoiceState>()(
           if (Object.prototype.hasOwnProperty.call(updates.to, "businessName")) delete nextErrors["to.businessName"];
         }
         if (updates.bankDetails) {
-          nextInvoice.bankDetails = { ...state.invoice.bankDetails, ...updates.bankDetails };
+          nextInvoice.bankDetails = updates.bankDetails as any;
         }
         if (Object.prototype.hasOwnProperty.call(updates, "invoiceNumber")) delete nextErrors["invoiceNumber"];
         if (Object.prototype.hasOwnProperty.call(updates, "title")) delete nextErrors["title"];

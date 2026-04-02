@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useInvoiceStore } from "@/store/invoice.store";
 import { templates, TemplateKey } from "@/features/templates/renderers";
 import dynamic from "next/dynamic";
@@ -23,16 +23,21 @@ const PdfRenderer = dynamic(
       onUrl?: (url?: string) => void;
     }) {
       const [instance, update] = usePDF({ document: doc });
+      const [stableUrl, setStableUrl] = useState<string | undefined>(undefined);
       
       useEffect(() => {
         update(doc);
       }, [doc, update]);
 
       useEffect(() => {
-        onUrl?.(instance.url || undefined);
-      }, [instance.url, onUrl]);
+        if (instance.url) setStableUrl(instance.url);
+      }, [instance.url]);
 
-      if (instance.loading) {
+      useEffect(() => {
+        onUrl?.(stableUrl);
+      }, [stableUrl, onUrl]);
+
+      if (!stableUrl && instance.loading) {
         return (
           <div className="flex h-full w-full items-center justify-center bg-muted/5">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -41,18 +46,30 @@ const PdfRenderer = dynamic(
       }
 
       if (instance.error) {
-        return <div className="p-4 text-destructive">Error rendering PDF</div>;
+        return (
+          <div className="p-4 text-destructive">
+            Error rendering PDF{instance.error ? `: ${String(instance.error)}` : ""}
+          </div>
+        );
       }
 
-      const src = instance.url || "";
+      if (!stableUrl) {
+        return (
+          <div className="flex h-full w-full items-center justify-center bg-muted/5">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        );
+      }
 
       return (
-        <iframe
-          key={instance.url || "pdf"}
-          src={src}
-          className="border-none w-full h-full" 
-          style={{ minHeight: '500px' }}
-        />
+        <div className="relative h-full w-full bg-background">
+          <iframe src={stableUrl ?? undefined} className="border-none w-full h-full" />
+          {instance.loading ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/30 backdrop-blur-[1px]">
+              <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
+            </div>
+          ) : null}
+        </div>
       );
     };
   }),
@@ -75,7 +92,7 @@ function resolvePdfBrand() {
 
 export function InvoicePreview() {
   const { invoice, updateInvoice } = useInvoiceStore();
-  const debouncedInvoice = useDebounce(invoice, 2000);
+  const debouncedInvoice = useDebounce(invoice, 3000);
   const [upiQr, setUpiQr] = useState<string | undefined>(undefined);
   const [pdfUrl, setPdfUrl] = useState<string | undefined>(undefined);
   const [pdfBrand, setPdfBrand] = useState(() => resolvePdfBrand());
@@ -127,11 +144,15 @@ export function InvoicePreview() {
   const SelectedTemplate = templates[(debouncedInvoice.template as TemplateKey) || "modern"] || templates.modern;
   const computedFileNameBase = `${invoice.invoiceNumber || "invoice"}_${invoice.to?.businessName || "client"}`.trim();
   const computedFileName = `${computedFileNameBase}.pdf`;
+  const pdfDoc = useMemo(
+    () => <SelectedTemplate invoice={{ ...debouncedInvoice, upiQr, pdfBrand }} />,
+    [SelectedTemplate, debouncedInvoice, upiQr, pdfBrand]
+  );
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="w-full h-full overflow-hidden bg-background">
-        <div className="flex items-center justify-between gap-2 px-3 py-2 border-b bg-background/80 backdrop-blur">
+    <div className="w-full h-full flex flex-col overflow-hidden">
+      <div className="w-full flex flex-col flex-1 min-h-0 bg-background">
+        <div className="flex items-center justify-between gap-2 px-3 py-2 border-b bg-background/80 backdrop-blur shrink-0">
           <div className="flex-1 min-w-0">
             <Input
               value={invoice.pdfFileName || ""}
@@ -159,10 +180,9 @@ export function InvoicePreview() {
             ) : null}
           </div>
         </div>
-        <PdfRenderer
-          onUrl={setPdfUrl}
-          document={<SelectedTemplate invoice={{ ...debouncedInvoice, upiQr, pdfBrand }} />}
-        />
+        <div className="flex-1 min-h-0">
+          <PdfRenderer onUrl={setPdfUrl} document={pdfDoc} />
+        </div>
       </div>
     </div>
   );
