@@ -25,15 +25,19 @@ interface PayslipState {
 }
 
 function normalizePayslip(p: Payslip): Payslip {
+  const { showRibbon: _showRibbon, ...rest } = p as Payslip & {
+    showRibbon?: boolean;
+  };
   return {
-    ...p,
+    ...rest,
     template: p.template || "modern",
     colorTheme: p.colorTheme || "#0038e0",
     showLogo: p.showLogo ?? true,
-    showRibbon: p.showRibbon ?? true,
     showFooter: p.showFooter ?? true,
     showPageNumbers: p.showPageNumbers ?? true,
     showWatermark: p.showWatermark ?? false,
+    showSignature: p.showSignature ?? false,
+    signatureMode: p.signatureMode || "draw",
   };
 }
 
@@ -77,10 +81,14 @@ function createDefaultPayslip(): Payslip {
     template: "modern",
     colorTheme: "#0038e0",
     showLogo: true,
-    showRibbon: true,
     showFooter: true,
     showPageNumbers: true,
     showWatermark: false,
+    showSignature: false,
+    signature: undefined,
+    signatureMode: "draw",
+    signatureTyped: "",
+    signatureRole: "",
     pdfFileName: "",
     createdAt: new Date(),
     updatedAt: new Date(),

@@ -58,7 +58,6 @@
 - Template (Modern / Classic / Minimal / Bold)
 - Color Theme (used in PDF header/bands)
 - Display Options
-  - Ribbon
   - Footer
   - Page Numbers
   - Watermark

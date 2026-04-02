@@ -4,9 +4,9 @@ import { Plus, RefreshCcw, Trash2 } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import { HexColorPicker } from "react-colorful";
-import SignaturePad from "signature_pad";
 import { DatePicker } from "@/components/shared/DatePicker";
 import { FilePicker } from "@/components/shared/FilePicker";
+import { SignatureSection } from "@/components/shared/SignatureSection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1146,237 +1146,23 @@ export function Section7Notes() {
 
 export function Section8Signature() {
   const { invoice, updateInvoice } = useInvoiceStore();
-  const canvasWrapRef = React.useRef<HTMLDivElement | null>(null);
-  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
-  const padRef = React.useRef<SignaturePad | null>(null);
-
   const selectedMode =
     invoice.signatureMode ||
     (invoice.signature ? "upload" : invoice.signatureTyped ? "type" : "draw");
 
-  const resizeCanvas = React.useCallback(() => {
-    const canvas = canvasRef.current;
-    const wrap = canvasWrapRef.current;
-    if (!canvas || !wrap) return;
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    const width = wrap.clientWidth;
-    if (!width) return;
-    const height = wrap.clientHeight || 140;
-    canvas.width = width * ratio;
-    canvas.height = height * ratio;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.scale(ratio, ratio);
-    }
-    padRef.current?.clear();
-  }, []);
-
-  React.useEffect(() => {
-    if (selectedMode !== "draw") return;
-    const canvas = canvasRef.current;
-    const wrap = canvasWrapRef.current;
-    if (!canvas) return;
-    padRef.current = new SignaturePad(canvas, {
-      backgroundColor: "rgb(255,255,255)",
-      penColor: "rgb(17,24,39)",
-      minWidth: 1,
-      maxWidth: 2.5,
-    });
-
-    let raf1 = 0;
-    let raf2 = 0;
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => {
-        resizeCanvas();
-      });
-    });
-
-    let ro: ResizeObserver | undefined;
-    if (wrap && typeof ResizeObserver !== "undefined") {
-      ro = new ResizeObserver(() => resizeCanvas());
-      ro.observe(wrap);
-    }
-    const onResize = () => resizeCanvas();
-    window.addEventListener("resize", onResize);
-    return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-      ro?.disconnect();
-      window.removeEventListener("resize", onResize);
-      padRef.current?.off();
-      padRef.current = null;
-    };
-  }, [resizeCanvas, selectedMode]);
-
-  const clearDraw = () => {
-    padRef.current?.clear();
-  };
-
-  const saveDraw = () => {
-    if (!padRef.current || padRef.current.isEmpty()) return;
-    updateInvoice({ signature: padRef.current.toDataURL("image/png") });
-  };
-
-  const handleSignatureUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      updateInvoice({ signature: reader.result as string });
-    };
-    reader.readAsDataURL(file);
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between border p-4 rounded-lg">
-        <div className="space-y-0.5">
-          <Label className="text-base">Show Signature</Label>
-          <div className="text-sm text-muted-foreground">
-            Include a signature block at the bottom of the invoice
-          </div>
-        </div>
-        <Switch
-          checked={invoice.showSignature ?? false}
-          onCheckedChange={(checked: boolean) =>
-            updateInvoice({ showSignature: checked })
-          }
-        />
-      </div>
-
-      {invoice.showSignature && (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Signatory Role / Designation</Label>
-            <Input
-              placeholder="Owner / Manager / Authorized Signatory"
-              value={invoice.signatureRole || ""}
-              onChange={(e) => updateInvoice({ signatureRole: e.target.value })}
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedMode === "draw" ? "default" : "outline"}
-              size="sm"
-              onClick={() => updateInvoice({ signatureMode: "draw" })}
-            >
-              Draw
-            </Button>
-            <Button
-              variant={selectedMode === "type" ? "default" : "outline"}
-              size="sm"
-              onClick={() => updateInvoice({ signatureMode: "type" })}
-            >
-              Type
-            </Button>
-            <Button
-              variant={selectedMode === "upload" ? "default" : "outline"}
-              size="sm"
-              onClick={() => updateInvoice({ signatureMode: "upload" })}
-            >
-              Upload
-            </Button>
-          </div>
-
-          {selectedMode === "draw" && (
-            <div className="space-y-2">
-              <Label>Draw Signature</Label>
-              <div
-                ref={canvasWrapRef}
-                className="border rounded-lg overflow-hidden bg-white h-[140px]"
-              >
-                <canvas ref={canvasRef} className="w-full h-full touch-none" />
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={clearDraw}>
-                  Clear
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    saveDraw();
-                    updateInvoice({ signatureMode: "draw" });
-                  }}
-                >
-                  Use Drawn
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {selectedMode === "type" && (
-            <div className="space-y-2">
-              <Label>Type Signature</Label>
-              <Input
-                placeholder="Your signature"
-                value={invoice.signatureTyped || ""}
-                onChange={(e) =>
-                  updateInvoice({ signatureTyped: e.target.value })
-                }
-              />
-              <div className="border rounded-lg bg-muted/10 p-3 h-[140px] flex items-center justify-center">
-                <div className="font-serif italic text-3xl text-foreground/80 truncate max-w-full">
-                  {invoice.signatureTyped || "Your Signature"}
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <Button
-                  size="sm"
-                  onClick={() => updateInvoice({ signatureMode: "type" })}
-                  disabled={!invoice.signatureTyped}
-                >
-                  Use Typed
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {selectedMode === "upload" && (
-            <div className="space-y-2">
-              <Label>Upload Signature</Label>
-              <FilePicker
-                accept="image/png, image/jpeg, image/jpg"
-                onFile={(file) => {
-                  handleSignatureUpload(file);
-                  updateInvoice({ signatureMode: "upload" });
-                }}
-                fileLabel={
-                  invoice.signature ? "Image selected" : "No file chosen"
-                }
-              />
-              {invoice.signature && (
-                <div className="border rounded-lg p-3 bg-muted/20">
-                  <div className="text-xs text-muted-foreground mb-2">
-                    Selected image
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="relative h-12 w-32 bg-white rounded-md p-1 border overflow-hidden">
-                      <Image
-                        src={invoice.signature}
-                        alt="Signature"
-                        fill
-                        className="object-contain"
-                        sizes="128px"
-                        unoptimized
-                      />
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => updateInvoice({ signature: undefined })}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+    <SignatureSection
+      enabled={invoice.showSignature ?? false}
+      onEnabledChange={(enabled) => updateInvoice({ showSignature: enabled })}
+      role={invoice.signatureRole || ""}
+      onRoleChange={(value) => updateInvoice({ signatureRole: value })}
+      mode={selectedMode}
+      onModeChange={(m) => updateInvoice({ signatureMode: m })}
+      typed={invoice.signatureTyped || ""}
+      onTypedChange={(value) => updateInvoice({ signatureTyped: value })}
+      imageData={invoice.signature}
+      onImageDataChange={(value) => updateInvoice({ signature: value })}
+    />
   );
 }
 

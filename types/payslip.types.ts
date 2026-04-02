@@ -44,10 +44,14 @@ export type Payslip = {
   template: PayslipTemplateKey;
   colorTheme: string;
   showLogo: boolean;
-  showRibbon: boolean;
   showFooter: boolean;
   showPageNumbers: boolean;
   showWatermark: boolean;
+  showSignature?: boolean;
+  signature?: string;
+  signatureMode?: "type" | "draw" | "upload";
+  signatureTyped?: string;
+  signatureRole?: string;
   pdfFileName?: string;
   createdAt?: Date;
   updatedAt?: Date;

@@ -8,6 +8,7 @@ import {
   View,
 } from "@react-pdf/renderer";
 import { PdfFooterBar } from "@/components/pdf/PdfFooterBar";
+import { PdfSignatureBlock } from "@/components/pdf/PdfSignatureBlock";
 import { formatMoneyPdf } from "@/lib/format";
 import { APP_NAME, SITE_URL } from "@/lib/site";
 import type { Payslip, PayslipTemplateKey } from "@/types/payslip.types";
@@ -251,7 +252,7 @@ export function PayslipPdf({ payslip }: { payslip: Payslip }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {t.headerMode === "band" && payslip.showRibbon ? (
+        {t.headerMode === "band" ? (
           <View style={[styles.headerBand, { backgroundColor: t.headerBg }]}>
             <View style={styles.headerBandTop}>
               <View style={styles.headerLeft}>
@@ -493,6 +494,20 @@ export function PayslipPdf({ payslip }: { payslip: Payslip }) {
           )}
         </View>
 
+        {payslip.showSignature ? (
+          <View style={styles.section}>
+            <PdfSignatureBlock
+              imageSrc={payslip.signature}
+              typedText={payslip.signatureTyped}
+              roleText={payslip.signatureRole}
+              textColor={t.muted}
+              dividerColor={t.border}
+              align="left"
+              width={220}
+            />
+          </View>
+        ) : null}
+
         <PdfFooterBar
           showFooter={!!payslip.showFooter}
           leftText={payslip.employer.companyName || "Thank you."}
@@ -686,6 +701,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 700,
     marginTop: 2,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginTop: 6,
+    marginBottom: 2,
   },
   footer: {
     position: "absolute",

@@ -5,6 +5,7 @@ import * as React from "react";
 import { HexColorPicker } from "react-colorful";
 import { DatePicker } from "@/components/shared/DatePicker";
 import { FilePicker } from "@/components/shared/FilePicker";
+import { SignatureSection } from "@/components/shared/SignatureSection";
 import {
   Accordion,
   AccordionContent,
@@ -58,10 +59,10 @@ export function PayslipForm() {
     "employer",
     "employee",
     "period",
-    "tax",
     "earnings",
     "deductions",
     "summary",
+    "signature",
     "design",
   ];
   const [openSections, setOpenSections] = React.useState<string[]>(allSections);
@@ -112,27 +113,6 @@ export function PayslipForm() {
         <h1 className="text-2xl font-bold tracking-tight">Payslip Details</h1>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <div className="text-xs text-muted-foreground">Gross Pay</div>
-          <div className="mt-1 text-lg font-bold">
-            {formatMoney(payslip.grossPay || 0, "INR")}
-          </div>
-        </div>
-        <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <div className="text-xs text-muted-foreground">Deductions</div>
-          <div className="mt-1 text-lg font-bold">
-            {formatMoney(payslip.totalDeductions || 0, "INR")}
-          </div>
-        </div>
-        <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <div className="text-xs text-muted-foreground">Net Pay</div>
-          <div className="mt-1 text-xl font-bold">
-            {formatMoney(payslip.netPay || 0, "INR")}
-          </div>
-        </div>
-      </div>
-
       <Accordion
         multiple
         value={openSections}
@@ -152,6 +132,7 @@ export function PayslipForm() {
                 <Label>Company Name</Label>
                 <Input
                   value={payslip.employer.companyName}
+                  placeholder="e.g., InvoiceLabs Pvt. Ltd."
                   onChange={(e) =>
                     updatePayslip({ employer: { companyName: e.target.value } })
                   }
@@ -163,6 +144,7 @@ export function PayslipForm() {
                 <Label>Company Address</Label>
                 <Input
                   value={payslip.employer.companyAddress}
+                  placeholder="e.g., Bangalore, Karnataka"
                   onChange={(e) =>
                     updatePayslip({
                       employer: { companyAddress: e.target.value },
@@ -210,6 +192,7 @@ export function PayslipForm() {
                 <Label>Employee Name</Label>
                 <Input
                   value={payslip.employee.employeeName}
+                  placeholder="e.g., Babajan Patan"
                   onChange={(e) =>
                     updatePayslip({
                       employee: { employeeName: e.target.value },
@@ -223,6 +206,7 @@ export function PayslipForm() {
                 <Label>Employee Code</Label>
                 <Input
                   value={payslip.employee.employeeCode}
+                  placeholder="e.g., 29"
                   onChange={(e) =>
                     updatePayslip({
                       employee: { employeeCode: e.target.value },
@@ -234,6 +218,7 @@ export function PayslipForm() {
                 <Label>UAN</Label>
                 <Input
                   value={payslip.employee.uan}
+                  placeholder="e.g., 123456789000"
                   onChange={(e) =>
                     updatePayslip({ employee: { uan: e.target.value } })
                   }
@@ -256,6 +241,7 @@ export function PayslipForm() {
                 <Label>PAN Number</Label>
                 <Input
                   value={payslip.employee.panNumber}
+                  placeholder="e.g., ABCDE1234F"
                   onChange={(e) =>
                     updatePayslip({ employee: { panNumber: e.target.value } })
                   }
@@ -265,6 +251,7 @@ export function PayslipForm() {
                 <Label>Department</Label>
                 <Input
                   value={payslip.employee.department}
+                  placeholder="e.g., Engineering"
                   onChange={(e) =>
                     updatePayslip({ employee: { department: e.target.value } })
                   }
@@ -274,6 +261,7 @@ export function PayslipForm() {
                 <Label>Bank Name</Label>
                 <Input
                   value={payslip.employee.bankName}
+                  placeholder="e.g., HDFC Bank"
                   onChange={(e) =>
                     updatePayslip({ employee: { bankName: e.target.value } })
                   }
@@ -283,6 +271,7 @@ export function PayslipForm() {
                 <Label>Bank Account Number</Label>
                 <Input
                   value={payslip.employee.bankAccountNumber}
+                  placeholder="e.g., XXXX1234"
                   onChange={(e) =>
                     updatePayslip({
                       employee: { bankAccountNumber: e.target.value },
@@ -328,6 +317,7 @@ export function PayslipForm() {
                 <Input
                   type="number"
                   value={payslip.payPeriod.year}
+                  placeholder="e.g., 2026"
                   onChange={(e) =>
                     updatePayslip({
                       payPeriod: { year: Number(e.target.value || 0) },
@@ -340,6 +330,7 @@ export function PayslipForm() {
                 <Input
                   type="number"
                   value={payslip.payPeriod.payableDays}
+                  placeholder="e.g., 30"
                   onChange={(e) =>
                     updatePayslip({
                       payPeriod: { payableDays: Number(e.target.value || 0) },
@@ -352,6 +343,7 @@ export function PayslipForm() {
                 <Input
                   type="number"
                   value={payslip.payPeriod.leaveBalance}
+                  placeholder="e.g., 0"
                   onChange={(e) =>
                     updatePayslip({
                       payPeriod: { leaveBalance: Number(e.target.value || 0) },
@@ -364,50 +356,43 @@ export function PayslipForm() {
                 <Input
                   type="number"
                   value={payslip.payPeriod.lopDays}
+                  placeholder="e.g., 0"
                   onChange={(e) =>
                     updatePayslip({
                       payPeriod: { lopDays: Number(e.target.value || 0) },
                     })
                   }
                 />
+                <div className="text-xs text-muted-foreground">
+                  Loss of Pay days
+                </div>
               </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem
-          value="tax"
-          className="bg-card rounded-xl border px-4 shadow-sm"
-        >
-          <AccordionTrigger className="hover:no-underline font-semibold text-lg py-4">
-            4. Tax Regime
-          </AccordionTrigger>
-          <AccordionContent className="pb-6 pt-3">
-            <div className="space-y-2 max-w-sm">
-              <Label>Tax Regime</Label>
-              <Select
-                value={payslip.taxRegime}
-                onValueChange={(val) => {
-                  if (val === "new" || val === "old") {
-                    updatePayslip({ taxRegime: val satisfies TaxRegime });
-                  }
-                }}
-              >
-                <SelectTrigger
-                  className="w-full"
-                  aria-invalid={!!errors.taxRegime}
+              <div className="space-y-2">
+                <Label>Tax Regime</Label>
+                <Select
+                  value={payslip.taxRegime}
+                  onValueChange={(val) => {
+                    if (val === "new" || val === "old") {
+                      updatePayslip({ taxRegime: val satisfies TaxRegime });
+                    }
+                  }}
                 >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new">New Regime</SelectItem>
-                  <SelectItem value="old">Old Regime</SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldError message={errors.taxRegime} />
-              <div className="text-xs text-muted-foreground">
-                Income Tax deduction updates automatically based on a simplified
-                slab calculation (editable).
+                  <SelectTrigger
+                    className="w-full"
+                    aria-invalid={!!errors.taxRegime}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">New Regime</SelectItem>
+                    <SelectItem value="old">Old Regime</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FieldError message={errors.taxRegime} />
+                <div className="text-xs text-muted-foreground">
+                  Income Tax deduction updates automatically based on a
+                  simplified slab calculation (editable).
+                </div>
               </div>
             </div>
           </AccordionContent>
@@ -418,19 +403,26 @@ export function PayslipForm() {
           className="bg-card rounded-xl border px-4 shadow-sm"
         >
           <AccordionTrigger className="hover:no-underline font-semibold text-lg py-4">
-            5. Earnings
+            4. Earnings
           </AccordionTrigger>
           <AccordionContent className="pb-6 pt-3">
             <div className="space-y-4">
               {payslip.earnings.map((e, idx) => (
                 <div
                   key={e.id}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end"
+                  className="grid grid-cols-1 md:grid-cols-[1fr_220px_auto] gap-3 items-start"
                 >
                   <div className="space-y-2">
                     <Label>Earning Name</Label>
                     <Input
                       value={e.name}
+                      placeholder={
+                        idx === 0
+                          ? "Basic"
+                          : idx === 1
+                            ? "House Rent Allowance"
+                            : "e.g., Bonus"
+                      }
                       onChange={(ev) => {
                         const next = [...payslip.earnings];
                         next[idx] = { ...e, name: ev.target.value };
@@ -438,12 +430,19 @@ export function PayslipForm() {
                       }}
                     />
                   </div>
-                  <div className="flex items-end gap-2">
-                    <div className="space-y-2 flex-1">
+                  <div className="flex items-start gap-2">
+                    <div className="space-y-2 w-full md:w-[220px]">
                       <Label>Amount</Label>
                       <Input
                         type="number"
                         value={e.amount}
+                        placeholder={
+                          idx === 0
+                            ? "e.g., 41667"
+                            : idx === 1
+                              ? "e.g., 20833"
+                              : "e.g., 5000"
+                        }
                         onChange={(ev) => {
                           const next = [...payslip.earnings];
                           next[idx] = {
@@ -454,21 +453,23 @@ export function PayslipForm() {
                         }}
                       />
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        const next = [...payslip.earnings];
-                        next.splice(idx, 1);
-                        updatePayslip({ earnings: next });
-                      }}
-                      aria-label="Remove earning"
-                      disabled={payslip.earnings.length <= 1}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="mt-[26px]">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          const next = [...payslip.earnings];
+                          next.splice(idx, 1);
+                          updatePayslip({ earnings: next });
+                        }}
+                        aria-label="Remove earning"
+                        disabled={payslip.earnings.length <= 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -485,19 +486,24 @@ export function PayslipForm() {
           className="bg-card rounded-xl border px-4 shadow-sm"
         >
           <AccordionTrigger className="hover:no-underline font-semibold text-lg py-4">
-            6. Deductions
+            5. Deductions
           </AccordionTrigger>
           <AccordionContent className="pb-6 pt-3">
             <div className="space-y-4">
               {payslip.deductions.map((d, idx) => (
                 <div
                   key={d.id}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end"
+                  className="grid grid-cols-1 md:grid-cols-[1fr_220px_auto] gap-3 items-start"
                 >
                   <div className="space-y-2">
                     <Label>Deduction Name</Label>
                     <Input
                       value={d.name}
+                      placeholder={
+                        idx === 0
+                          ? "Provident Fund (PF)"
+                          : "Income Tax (TDS) - New Regime"
+                      }
                       onChange={(ev) => {
                         const next = [...payslip.deductions];
                         next[idx] = { ...d, name: ev.target.value };
@@ -510,12 +516,13 @@ export function PayslipForm() {
                       </div>
                     ) : null}
                   </div>
-                  <div className="flex items-end gap-2">
-                    <div className="space-y-2 flex-1">
+                  <div className="flex items-start gap-2">
+                    <div className="space-y-2 w-full md:w-[220px]">
                       <Label>Amount</Label>
                       <Input
                         type="number"
                         value={d.amount}
+                        placeholder={idx === 0 ? "e.g., 1800" : "₹ 0"}
                         onChange={(ev) => {
                           const next = [...payslip.deductions];
                           next[idx] = {
@@ -527,21 +534,25 @@ export function PayslipForm() {
                         }}
                       />
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        const next = [...payslip.deductions];
-                        next.splice(idx, 1);
-                        updatePayslip({ deductions: next });
-                      }}
-                      aria-label="Remove deduction"
-                      disabled={payslip.deductions.length <= 1 || d.isAuto}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {!d.isAuto ? (
+                      <div className="mt-[26px]">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => {
+                            const next = [...payslip.deductions];
+                            next.splice(idx, 1);
+                            updatePayslip({ deductions: next });
+                          }}
+                          aria-label="Remove deduction"
+                          disabled={payslip.deductions.length <= 1}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -558,10 +569,10 @@ export function PayslipForm() {
           className="bg-card rounded-xl border px-4 shadow-sm"
         >
           <AccordionTrigger className="hover:no-underline font-semibold text-lg py-4">
-            7. Summary
+            6. Summary
           </AccordionTrigger>
           <AccordionContent className="pb-6 pt-3">
-            <div className="space-y-3 max-w-md">
+            <div className="space-y-3 w-full">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">Gross Pay</div>
                 <div className="font-semibold text-foreground">
@@ -586,11 +597,45 @@ export function PayslipForm() {
         </AccordionItem>
 
         <AccordionItem
+          value="signature"
+          className="bg-card rounded-xl border px-4 shadow-sm"
+        >
+          <AccordionTrigger className="hover:no-underline font-semibold text-lg py-4">
+            7. Signature
+          </AccordionTrigger>
+          <AccordionContent className="pb-6 pt-3">
+            <SignatureSection
+              enabled={payslip.showSignature ?? false}
+              onEnabledChange={(enabled) =>
+                updatePayslip({ showSignature: enabled })
+              }
+              role={payslip.signatureRole || ""}
+              onRoleChange={(value) => updatePayslip({ signatureRole: value })}
+              mode={
+                payslip.signatureMode ||
+                (payslip.signature
+                  ? "upload"
+                  : payslip.signatureTyped
+                    ? "type"
+                    : "draw")
+              }
+              onModeChange={(m) => updatePayslip({ signatureMode: m })}
+              typed={payslip.signatureTyped || ""}
+              onTypedChange={(value) =>
+                updatePayslip({ signatureTyped: value })
+              }
+              imageData={payslip.signature}
+              onImageDataChange={(value) => updatePayslip({ signature: value })}
+            />
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem
           value="design"
           className="bg-card rounded-xl border px-4 shadow-sm"
         >
           <AccordionTrigger className="hover:no-underline font-semibold text-lg py-4">
-            8. Design & Branding
+            8. Design &amp; Branding
           </AccordionTrigger>
           <AccordionContent className="pb-6 pt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -663,16 +708,6 @@ export function PayslipForm() {
               <div className="space-y-4 md:col-span-2">
                 <Label className="text-base">Display Options</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="payslipShowRibbon"
-                      checked={payslip.showRibbon ?? true}
-                      onCheckedChange={(c: boolean) =>
-                        updatePayslip({ showRibbon: c })
-                      }
-                    />
-                    <Label htmlFor="payslipShowRibbon">Ribbon</Label>
-                  </div>
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="payslipShowFooter"

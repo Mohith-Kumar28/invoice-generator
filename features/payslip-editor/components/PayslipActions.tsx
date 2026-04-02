@@ -1,7 +1,7 @@
 "use client";
 
 import { pdf } from "@react-pdf/renderer";
-import { Archive, Check, FileDown, Loader2, RotateCcw } from "lucide-react";
+import { Archive, Check, FileDown, FilePlus, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,7 +43,7 @@ export function PayslipActions() {
     enabled: !!payslip.id,
   });
 
-  const handleReset = () => {
+  const handleNew = () => {
     resetPayslip();
   };
 
@@ -131,9 +131,9 @@ export function PayslipActions() {
             </>
           ) : null}
         </div>
-        <Button variant="secondary" onClick={handleReset}>
-          <RotateCcw className="h-4 w-4 sm:mr-2" />
-          <span>Reset</span>
+        <Button variant="secondary" onClick={handleNew}>
+          <FilePlus className="h-4 w-4 sm:mr-2" />
+          <span>New</span>
         </Button>
         <Button
           variant="default"
