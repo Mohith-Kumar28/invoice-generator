@@ -9,5 +9,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
       changeFrequency: "weekly",
     },
+    {
+      url: `${SITE_URL}/payslip-generator`,
+      priority: 0.85,
+      changeFrequency: "weekly",
+    },
+    {
+      url: `${SITE_URL}/qr-code-generator`,
+      priority: 0.85,
+      changeFrequency: "weekly",
+    },
   ];
 }

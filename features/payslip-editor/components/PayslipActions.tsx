@@ -1,9 +1,26 @@
 "use client";
 
 import { pdf } from "@react-pdf/renderer";
-import { Archive, Check, FileDown, FilePlus, Loader2 } from "lucide-react";
+import {
+  Archive,
+  Check,
+  Copy,
+  FileDown,
+  FilePlus,
+  Loader2,
+  Share2,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -11,6 +28,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { encodePayslipToUrlParam } from "@/features/payslip-editor/lib/share-payslip";
 import { usePayslipStore } from "@/features/payslip-editor/store/payslip.store";
 import { PayslipTemplate } from "@/features/payslip-editor/templates/PayslipTemplate";
 import { SavedPayslipsList } from "@/features/saved-items/payslips/SavedPayslipsList";
@@ -25,6 +43,9 @@ export function PayslipActions() {
   const { saveItem: savePayslip } = useSavedPayslipsStore();
   const [downloading, setDownloading] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [copied, setCopied] = useState(false);
   const pdfBrand = usePdfBrand();
 
   useEffect(() => {
@@ -46,6 +67,41 @@ export function PayslipActions() {
 
   const handleNew = () => {
     resetPayslip();
+  };
+
+  const buildShareUrl = () => {
+    const u = new URL(window.location.href);
+    u.searchParams.delete("s");
+    const encoded = encodePayslipToUrlParam(payslip);
+    u.searchParams.set("s", encoded);
+    u.hash = "";
+    return u.toString();
+  };
+
+  const handleShare = async () => {
+    const url = buildShareUrl();
+    setShareUrl(url);
+    setCopied(false);
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        const nav = navigator as Navigator & {
+          share?: (data: ShareData) => Promise<void>;
+        };
+        if (typeof nav.share === "function") {
+          await nav.share({ url, title: "Payslip" });
+        }
+        return;
+      } catch {}
+    }
+    setShareOpen(true);
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {}
   };
 
   const handleDownload = async () => {
@@ -138,6 +194,33 @@ export function PayslipActions() {
             </>
           ) : null}
         </div>
+        <Button variant="outline" onClick={handleShare}>
+          <Share2 className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Share</span>
+        </Button>
+        <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Share payslip</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Input readOnly value={shareUrl} />
+            </div>
+            <DialogFooter>
+              <DialogClose render={<Button variant="outline" />}>
+                Close
+              </DialogClose>
+              <Button onClick={handleCopy} variant="default">
+                {copied ? (
+                  <Check className="h-4 w-4 sm:mr-2" />
+                ) : (
+                  <Copy className="h-4 w-4 sm:mr-2" />
+                )}
+                <span>{copied ? "Copied" : "Copy link"}</span>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <Button variant="secondary" onClick={handleNew}>
           <FilePlus className="h-4 w-4 sm:mr-2" />
           <span>New</span>

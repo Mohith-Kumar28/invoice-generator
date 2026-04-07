@@ -432,7 +432,11 @@ export function QrCodePreview() {
           const d = docRef.current;
           const includeDetails = !!d.showActionDetails;
           const outExt =
-            extension === "jpeg" ? "jpg" : extension === "tiff" ? "tif" : extension;
+            extension === "jpeg"
+              ? "jpg"
+              : extension === "tiff"
+                ? "tif"
+                : extension;
 
           if (!includeDetails) {
             if (

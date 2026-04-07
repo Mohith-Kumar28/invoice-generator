@@ -4,7 +4,10 @@ export const runtime = "nodejs";
 
 function sanitizeFileName(name: string) {
   const base = (name || "qr-code").trim() || "qr-code";
-  return base.replace(/[^\w.-]+/g, "-").replace(/-+/g, "-").slice(0, 80);
+  return base
+    .replace(/[^\w.-]+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 80);
 }
 
 export async function POST(req: Request) {
@@ -24,10 +27,16 @@ export async function POST(req: Request) {
     return Response.json({ error: "svg is too large" }, { status: 413 });
   }
   if (!Number.isFinite(width) || !Number.isFinite(height)) {
-    return Response.json({ error: "width and height are required" }, { status: 400 });
+    return Response.json(
+      { error: "width and height are required" },
+      { status: 400 },
+    );
   }
   if (width < 1 || height < 1 || width > 4096 || height > 4096) {
-    return Response.json({ error: "width/height out of range" }, { status: 400 });
+    return Response.json(
+      { error: "width/height out of range" },
+      { status: 400 },
+    );
   }
   if (colorSpace !== "cmyk" && colorSpace !== "rgb") {
     return Response.json({ error: "invalid colorSpace" }, { status: 400 });
@@ -55,7 +64,10 @@ export async function POST(req: Request) {
       .resize(Math.round(width), Math.round(height), { fit: "fill" })
       .flatten({ background: "#ffffff" });
 
-    img = colorSpace === "cmyk" ? img.toColourspace("cmyk") : img.toColourspace("srgb");
+    img =
+      colorSpace === "cmyk"
+        ? img.toColourspace("cmyk")
+        : img.toColourspace("srgb");
 
     if (format === "jpeg") {
       img = img.jpeg({ quality: 95, mozjpeg: true });

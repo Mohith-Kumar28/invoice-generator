@@ -1,8 +1,24 @@
 "use client";
 
-import { Archive, Check, Download, FilePlus, Loader2 } from "lucide-react";
+import {
+  Archive,
+  Check,
+  Copy,
+  Download,
+  FilePlus,
+  Loader2,
+  Share2,
+} from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -20,7 +37,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { buildQrFileName, withQrFileVariant } from "@/features/qr-code-editor/lib/qr-filename";
+import {
+  buildQrFileName,
+  withQrFileVariant,
+} from "@/features/qr-code-editor/lib/qr-filename";
+import { encodeQrToUrlParam } from "@/features/qr-code-editor/lib/share-qr";
 import { useQrCodeStore } from "@/features/qr-code-editor/store/qr-code.store";
 import type { QrCodeDoc } from "@/features/qr-code-editor/types/qr-code.types";
 import { SavedQrCodesList } from "@/features/saved-items/qr-codes/SavedQrCodesList";
@@ -40,6 +61,9 @@ export function QrCodeActions() {
   const { saveItem } = useSavedQrCodesStore();
   const [savedOpen, setSavedOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const handleAutoSave = useCallback(
     (q: QrCodeDoc) => {
@@ -110,6 +134,41 @@ export function QrCodeActions() {
     });
   };
 
+  const buildShareUrl = () => {
+    const u = new URL(window.location.href);
+    u.searchParams.delete("s");
+    const encoded = encodeQrToUrlParam(doc);
+    u.searchParams.set("s", encoded);
+    u.hash = "";
+    return u.toString();
+  };
+
+  const handleShare = async () => {
+    const url = buildShareUrl();
+    setShareUrl(url);
+    setCopied(false);
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        const nav = navigator as Navigator & {
+          share?: (data: ShareData) => Promise<void>;
+        };
+        if (typeof nav.share === "function") {
+          await nav.share({ url, title: "QR code" });
+        }
+        return;
+      } catch {}
+    }
+    setShareOpen(true);
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
+
   return (
     <div className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur border-b border-border/40 p-3 sm:p-4 flex items-center shadow-sm overflow-x-auto gap-2 no-scrollbar shrink-0">
       <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
@@ -149,6 +208,34 @@ export function QrCodeActions() {
             </>
           ) : null}
         </div>
+
+        <Button variant="outline" onClick={handleShare}>
+          <Share2 className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Share</span>
+        </Button>
+        <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Share QR</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Input readOnly value={shareUrl} />
+            </div>
+            <DialogFooter>
+              <DialogClose render={<Button variant="outline" />}>
+                Close
+              </DialogClose>
+              <Button onClick={handleCopy} variant="default">
+                {copied ? (
+                  <Check className="h-4 w-4 sm:mr-2" />
+                ) : (
+                  <Copy className="h-4 w-4 sm:mr-2" />
+                )}
+                <span>{copied ? "Copied" : "Copy link"}</span>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Button variant="secondary" onClick={() => resetDoc()}>
           <FilePlus className="h-4 w-4 sm:mr-2" />
