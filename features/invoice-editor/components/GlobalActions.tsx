@@ -162,19 +162,7 @@ export function GlobalActions() {
         ? safe
         : `${safe}.pdf`;
 
-      const nav = navigator as Navigator & {
-        canShare?: (data: ShareData) => boolean;
-        share?: (data: ShareData) => Promise<void>;
-        maxTouchPoints?: number;
-      };
-      const file = new File([blob], fileName, { type: "application/pdf" });
-      const canShareFiles =
-        typeof nav.canShare === "function" && nav.canShare({ files: [file] });
-
-      if (typeof nav.share === "function" && canShareFiles) {
-        await nav.share({ files: [file], title: fileName });
-        return;
-      }
+      const nav = navigator as Navigator & { maxTouchPoints?: number };
 
       const ua =
         typeof navigator !== "undefined" ? navigator.userAgent || "" : "";
