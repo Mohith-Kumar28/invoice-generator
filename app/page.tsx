@@ -69,12 +69,13 @@ export default function HomePage() {
               </Button>
               <Button
                 nativeButton={false}
-                render={<Link href="#faq" />}
+                render={<Link href="/qr-code-generator" />}
                 variant="outline"
                 size="lg"
                 className="h-11 px-6"
               >
-                FAQ
+                Generate QR
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </div>

@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import GitHubButton from "react-github-btn";
 
 export function GitHubIssueButton({
   size = "large",
@@ -8,17 +10,14 @@ export function GitHubIssueButton({
   showCount?: boolean;
 }) {
   return (
-    <Link
-      className="github-button"
+    <GitHubButton
       href="https://github.com/Mohith-Kumar28/invoice-lab/issues"
       data-color-scheme="no-preference: light; light: light; dark: dark;"
       data-size={size}
       data-show-count={showCount ? "true" : "false"}
       aria-label="Issue Mohith-Kumar28/invoice-lab on GitHub"
-      target="_blank"
-      rel="noreferrer"
     >
       Issue
-    </Link>
+    </GitHubButton>
   );
 }
