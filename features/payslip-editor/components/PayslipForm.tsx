@@ -642,9 +642,7 @@ export function PayslipForm() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="modern">Modern</SelectItem>
-                    <SelectItem value="classic">Classic</SelectItem>
                     <SelectItem value="minimal">Minimal</SelectItem>
-                    <SelectItem value="bold">Bold</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -14,15 +14,7 @@ import { APP_NAME, SITE_URL } from "@/lib/site";
 
 const CANONICAL_URL = `${SITE_URL}/invoice-generator`;
 
-const TEMPLATES = [
-  "modern",
-  "classic",
-  "minimal",
-  "bold",
-  "creative",
-  "corporate",
-  "freelancer",
-] as const;
+const TEMPLATES = ["modern", "minimal"] as const;
 
 const FAQ = [
   {

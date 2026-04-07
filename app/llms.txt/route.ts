@@ -19,7 +19,7 @@ Keywords: invoice generator, PDF invoice, invoice template, free invoice generat
 Purpose: Create invoices and export a PDF invoice.
 Inputs: Business/client details, line items, discounts, taxes, shipping, notes/terms, signature.
 Payments: UPI QR (INR), bank details, payment URL.
-Templates: modern, classic, minimal, bold, creative, corporate, freelancer.
+Templates: modern, minimal.
 Output: PDF preview + PDF download.
 Storage: Autosave in browser storage + saved invoices list (last 50).
 Share: Share a link to open the same invoice draft (no backend upload).
@@ -30,7 +30,7 @@ Editor: ${SITE_URL}/payslip-generator/tool
 Keywords: payslip generator, salary slip PDF, payslip template
 Purpose: Generate a salary slip and export a PDF payslip.
 Inputs: Employer/employee details, pay period, earnings, deductions, totals, optional signature.
-Templates: modern, classic, minimal, bold.
+Templates: modern, minimal.
 Output: PDF preview + PDF download.
 Storage: Autosave in browser storage + saved payslips list (last 50).
 Share: Share a link to open the same payslip draft (no backend upload).

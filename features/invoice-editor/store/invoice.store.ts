@@ -19,6 +19,10 @@ interface InvoiceState {
   clearErrors: (keys?: string[]) => void;
 }
 
+function normalizeInvoiceTemplate(template: unknown) {
+  return template === "minimal" ? "minimal" : "modern";
+}
+
 function createDefaultInvoice(): Partial<Invoice> {
   const issueDate = new Date();
   const dueDate = new Date(
@@ -86,6 +90,7 @@ export const useInvoiceStore = create<InvoiceState>()(
           invoice: {
             ...(invoice || {}),
             id: invoice?.id || crypto.randomUUID(),
+            template: normalizeInvoiceTemplate(invoice?.template),
           },
         }),
       setErrors: (errors) => set({ errors }),
@@ -106,6 +111,8 @@ export const useInvoiceStore = create<InvoiceState>()(
 
           if (!nextInvoice.id)
             nextInvoice.id = state.invoice.id || crypto.randomUUID();
+
+          nextInvoice.template = normalizeInvoiceTemplate(nextInvoice.template);
 
           if (from) {
             nextInvoice.from = {

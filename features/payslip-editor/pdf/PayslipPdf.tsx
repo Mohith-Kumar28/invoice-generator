@@ -320,12 +320,11 @@ export function PayslipPdf({ payslip }: { payslip: Payslip }) {
         <View style={styles.section}>
           <View style={styles.twoCol}>
             <View
-              style={[
-                styles.col,
+              style={
                 t.boxed
-                  ? { borderColor: t.border, borderWidth: 1 }
-                  : { borderWidth: 0, padding: 0 },
-              ]}
+                  ? [styles.colBoxed, { borderColor: t.border }]
+                  : styles.colPlain
+              }
             >
               <Text style={[styles.sectionTitle, { color: "#111827" }]}>
                 Employee
@@ -359,12 +358,11 @@ export function PayslipPdf({ payslip }: { payslip: Payslip }) {
             </View>
 
             <View
-              style={[
-                styles.col,
+              style={
                 t.boxed
-                  ? { borderColor: t.border, borderWidth: 1 }
-                  : { borderWidth: 0, padding: 0 },
-              ]}
+                  ? [styles.colBoxed, { borderColor: t.border }]
+                  : styles.colPlain
+              }
             >
               <Text style={[styles.sectionTitle, { color: "#111827" }]}>
                 Pay &amp; Bank
@@ -597,12 +595,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 18,
   },
-  col: {
+  colBoxed: {
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: "#E5E7EB",
+  },
+  colPlain: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 0,
   },
   kvRow: {
     flexDirection: "row",

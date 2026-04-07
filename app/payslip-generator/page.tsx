@@ -14,7 +14,7 @@ import { APP_NAME, SITE_URL } from "@/lib/site";
 
 const CANONICAL_URL = `${SITE_URL}/payslip-generator`;
 
-const TEMPLATES = ["modern", "classic", "minimal", "bold"] as const;
+const TEMPLATES = ["modern", "minimal"] as const;
 
 const FAQ = [
   {

@@ -1105,12 +1105,7 @@ export function Section9Design() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="modern">Modern</SelectItem>
-            <SelectItem value="classic">Classic</SelectItem>
             <SelectItem value="minimal">Minimal</SelectItem>
-            <SelectItem value="bold">Bold</SelectItem>
-            <SelectItem value="creative">Creative</SelectItem>
-            <SelectItem value="corporate">Corporate</SelectItem>
-            <SelectItem value="freelancer">Freelancer</SelectItem>
           </SelectContent>
         </Select>
       </div>

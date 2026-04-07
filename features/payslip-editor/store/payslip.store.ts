@@ -28,9 +28,10 @@ function normalizePayslip(p: Payslip): Payslip {
   const { showRibbon: _showRibbon, ...rest } = p as Payslip & {
     showRibbon?: boolean;
   };
+  const template = p.template === "minimal" ? "minimal" : "modern";
   return {
     ...rest,
-    template: p.template || "modern",
+    template,
     colorTheme: p.colorTheme || "#0038e0",
     showLogo: p.showLogo ?? true,
     showFooter: p.showFooter ?? true,
