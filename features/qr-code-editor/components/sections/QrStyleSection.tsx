@@ -36,27 +36,31 @@ export function QrStyleSection() {
                 { label: "Large", value: 384 },
               ] as const;
               const selected =
-                options.find((o) => o.value === doc.style.size)?.label ?? "Medium";
+                options.find((o) => o.value === doc.style.size)?.label ??
+                "Medium";
               return (
-            <Select
-              value={selected}
-              onValueChange={(val) =>
-                updateDoc({
-                  style: { size: options.find((o) => o.label === val)?.value ?? 320 },
-                })
-              }
-            >
-              <SelectTrigger id="qrPreviewSize" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {options.map((o) => (
-                  <SelectItem key={o.label} value={o.label}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <Select
+                  value={selected}
+                  onValueChange={(val) =>
+                    updateDoc({
+                      style: {
+                        size:
+                          options.find((o) => o.label === val)?.value ?? 320,
+                      },
+                    })
+                  }
+                >
+                  <SelectTrigger id="qrPreviewSize" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.map((o) => (
+                      <SelectItem key={o.label} value={o.label}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               );
             })()}
           </div>
@@ -70,29 +74,31 @@ export function QrStyleSection() {
                 { label: "Spacious", value: 16 },
               ] as const;
               const selected =
-                options.find((o) => o.value === doc.style.margin)?.label ?? "Normal";
+                options.find((o) => o.value === doc.style.margin)?.label ??
+                "Normal";
               return (
-            <Select
-              value={selected}
-              onValueChange={(val) =>
-                updateDoc({
-                  style: {
-                    margin: options.find((o) => o.label === val)?.value ?? 8,
-                  },
-                })
-              }
-            >
-              <SelectTrigger id="qrMargin" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {options.map((o) => (
-                  <SelectItem key={o.label} value={o.label}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <Select
+                  value={selected}
+                  onValueChange={(val) =>
+                    updateDoc({
+                      style: {
+                        margin:
+                          options.find((o) => o.label === val)?.value ?? 8,
+                      },
+                    })
+                  }
+                >
+                  <SelectTrigger id="qrMargin" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.map((o) => (
+                      <SelectItem key={o.label} value={o.label}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               );
             })()}
           </div>

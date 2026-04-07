@@ -20,7 +20,11 @@ export function buildQrFileName(doc: QrCodeDoc) {
   const prefix = "qr";
   if (doc.type === "url") {
     try {
-      const u = new URL(doc.url.trim().startsWith("http") ? doc.url.trim() : `https://${doc.url.trim()}`);
+      const u = new URL(
+        doc.url.trim().startsWith("http")
+          ? doc.url.trim()
+          : `https://${doc.url.trim()}`,
+      );
       const host = slugify(u.host);
       return host ? `${prefix}-url-${host}` : `${prefix}-url`;
     } catch {
@@ -69,4 +73,3 @@ export function buildQrFileName(doc: QrCodeDoc) {
   }
   return `${prefix}-${slugify(doc.type) || "code"}`;
 }
-

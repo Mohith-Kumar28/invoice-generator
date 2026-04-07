@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
   Calendar,
   IndianRupee,
@@ -12,6 +11,7 @@ import {
   TextAlignStart,
   Wifi,
 } from "lucide-react";
+import * as React from "react";
 import { buildQrPayload } from "@/features/qr-code-editor/lib/qr-payload";
 import { useQrCodeStore } from "@/features/qr-code-editor/store/qr-code.store";
 
@@ -94,13 +94,7 @@ function getDetailsValue(doc: {
   return "—";
 }
 
-function downloadBlob({
-  blob,
-  fileName,
-}: {
-  blob: Blob;
-  fileName: string;
-}) {
+function downloadBlob({ blob, fileName }: { blob: Blob; fileName: string }) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -130,7 +124,11 @@ function loadImageFromBlob(blob: Blob): Promise<HTMLImageElement> {
   });
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
+function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+) {
   const words = text.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   let line = "";
@@ -296,7 +294,7 @@ function iconSvg({
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 }
 
-function base64EncodeUtf8(input: string) {
+function _base64EncodeUtf8(input: string) {
   const utf8 = encodeURIComponent(input).replace(/%([0-9A-F]{2})/g, (_, p1) =>
     String.fromCharCode(Number.parseInt(p1, 16)),
   );
@@ -326,7 +324,9 @@ export function QrCodePreview() {
         ? undefined
         : doc.style.cornersSquareType;
     const cornersDotType =
-      doc.style.cornersDotType === "none" ? undefined : doc.style.cornersDotType;
+      doc.style.cornersDotType === "none"
+        ? undefined
+        : doc.style.cornersDotType;
 
     const logoMargin = doc.logoDataUrl ? 8 : 0;
 
@@ -448,7 +448,10 @@ export function QrCodePreview() {
               Math.round(18 * scale) +
               Math.round(18 * scale) +
               (title ? Math.round(26 * scale) : 0) +
-              (descLines.length ? descLines.length * Math.round(18 * scale) + Math.round(6 * scale) : 0) +
+              (descLines.length
+                ? descLines.length * Math.round(18 * scale) +
+                  Math.round(6 * scale)
+                : 0) +
               detailsPadding * 2;
             const cardHeight = detailStartY + detailsHeight + pad;
 
@@ -479,7 +482,8 @@ export function QrCodePreview() {
 
             const descSvg = descLines
               .map((line, i) => {
-                const yy = y + Math.round(72 * scale) + i * Math.round(18 * scale);
+                const yy =
+                  y + Math.round(72 * scale) + i * Math.round(18 * scale);
                 return `<text x="${textX}" y="${yy}" font-family="system-ui, -apple-system, Segoe UI, Roboto" font-size="${descSize}" font-weight="400" fill="rgba(0,0,0,0.6)">${safe(
                   line,
                 )}</text>`;
@@ -501,11 +505,11 @@ export function QrCodePreview() {
     ${iconSvg({ type: d.type, size: iconSize, stroke: "rgba(0,0,0,0.85)", strokeWidth: iconStroke })}
   </g>
   <text x="${textX}" y="${y}" font-family="system-ui, -apple-system, Segoe UI, Roboto" font-size="${labelSize}" font-weight="700" fill="rgba(0,0,0,0.85)">${safe(
-              `${label}`,
-            )}</text>
+    `${label}`,
+  )}</text>
   <text x="${textX}" y="${y + line1}" font-family="system-ui, -apple-system, Segoe UI, Roboto" font-size="${detailSize}" font-weight="400" fill="rgba(0,0,0,0.6)">${safe(
-              detail,
-            )}</text>
+    detail,
+  )}</text>
   ${titleSvg}
   ${descSvg}
 </svg>`;
@@ -540,7 +544,10 @@ export function QrCodePreview() {
             Math.round(18 * scale) +
             Math.round(18 * scale) +
             (title ? Math.round(26 * scale) : 0) +
-            (descLines.length ? descLines.length * Math.round(18 * scale) + Math.round(6 * scale) : 0) +
+            (descLines.length
+              ? descLines.length * Math.round(18 * scale) +
+                Math.round(6 * scale)
+              : 0) +
             detailsPadding * 2;
 
           const dividerY = pad + exportSize + 16;
@@ -575,7 +582,14 @@ export function QrCodePreview() {
           const detailsW = cardWidth - detailsX * 2;
           const detailsRadius = clamp(Math.round(radius * 0.7), 12, 24);
           ctx.fillStyle = detailsBg;
-          drawRoundedRect(ctx, detailsX, detailsY, detailsW, detailsHeight, detailsRadius);
+          drawRoundedRect(
+            ctx,
+            detailsX,
+            detailsY,
+            detailsW,
+            detailsHeight,
+            detailsRadius,
+          );
           ctx.fill();
           ctx.strokeStyle = border;
           ctx.lineWidth = 1;
@@ -681,7 +695,10 @@ export function QrCodePreview() {
           </div>
           {doc.showActionDetails ? (
             <div className="mt-4">
-              <div className="my-4 border-t" style={{ borderColor: "#DDD6FE" }} />
+              <div
+                className="my-4 border-t"
+                style={{ borderColor: "#DDD6FE" }}
+              />
               <div
                 className="rounded-2xl border p-5"
                 style={{ backgroundColor: "#F8FAFF", borderColor: "#DDD6FE" }}

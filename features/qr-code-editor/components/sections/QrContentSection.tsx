@@ -13,11 +13,11 @@ import {
   Text,
   Wifi,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ImagePicker } from "@/components/shared/ImagePicker";
 import { RequiredLabel } from "@/components/shared/RequiredLabel";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -423,9 +423,7 @@ export function QrContentSection() {
             <Textarea
               id="eventDescription"
               value={doc.eventDescription}
-              onChange={(e) =>
-                updateDoc({ eventDescription: e.target.value })
-              }
+              onChange={(e) => updateDoc({ eventDescription: e.target.value })}
               rows={4}
             />
           </div>
@@ -443,7 +441,9 @@ export function QrContentSection() {
                   onChange={(e) => {
                     clearErrors(["eventStart"]);
                     updateDoc({
-                      eventStart: e.target.value ? `${e.target.value}T00:00` : "",
+                      eventStart: e.target.value
+                        ? `${e.target.value}T00:00`
+                        : "",
                     });
                   }}
                   aria-invalid={!!errors.eventStart}
@@ -525,28 +525,28 @@ export function QrContentSection() {
                 options.find((o) => o.value === doc.style.logoSize)?.label ??
                 "Medium (1×)";
               return (
-            <Select
-              value={selected}
-              onValueChange={(val) =>
-                updateDoc({
-                  style: {
-                    logoSize:
-                      options.find((o) => o.label === val)?.value ?? 0.3,
-                  },
-                })
-              }
-            >
-              <SelectTrigger id="logoScale" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {options.map((o) => (
-                  <SelectItem key={o.label} value={o.label}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <Select
+                  value={selected}
+                  onValueChange={(val) =>
+                    updateDoc({
+                      style: {
+                        logoSize:
+                          options.find((o) => o.label === val)?.value ?? 0.3,
+                      },
+                    })
+                  }
+                >
+                  <SelectTrigger id="logoScale" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.map((o) => (
+                      <SelectItem key={o.label} value={o.label}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               );
             })()}
           </div>

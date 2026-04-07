@@ -4,9 +4,9 @@ import { format } from "date-fns";
 import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQrCodeStore } from "@/features/qr-code-editor/store/qr-code.store";
+import type { QrCodeDoc } from "@/features/qr-code-editor/types/qr-code.types";
 import { SavedItemsList } from "@/features/saved-items/components/SavedItemsList";
 import { useSavedQrCodesStore } from "@/features/saved-items/qr-codes/saved-qr-codes.store";
-import type { QrCodeDoc } from "@/features/qr-code-editor/types/qr-code.types";
 
 function getTitle(item: QrCodeDoc) {
   if (item.type === "url") return "URL";

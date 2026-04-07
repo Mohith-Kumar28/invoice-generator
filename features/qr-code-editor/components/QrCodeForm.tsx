@@ -16,7 +16,8 @@ export function QrCodeForm() {
   const [openSections, setOpenSections] = useState<string[]>(initial);
 
   useEffect(() => {
-    const handler = () => setOpenSections(["section-1", "section-2", "section-3"]);
+    const handler = () =>
+      setOpenSections(["section-1", "section-2", "section-3"]);
     window.addEventListener("qr:showErrors", handler);
     return () => window.removeEventListener("qr:showErrors", handler);
   }, []);

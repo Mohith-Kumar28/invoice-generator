@@ -1,11 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { SITE_URL } from "@/lib/site";
 import type {
   QrCodeDoc,
   QrCodeStyle,
   QrCodeType,
 } from "@/features/qr-code-editor/types/qr-code.types";
+import { SITE_URL } from "@/lib/site";
 
 type QrCodeUpdate = Partial<Omit<QrCodeDoc, "style">> & {
   style?: Partial<QrCodeStyle>;
@@ -99,7 +99,11 @@ function createDefaultDoc(overrides?: Partial<QrCodeDoc>): QrCodeDoc {
     createdAt: now,
     updatedAt: now,
   };
-  return { ...base, ...overrides, style: { ...base.style, ...overrides?.style } };
+  return {
+    ...base,
+    ...overrides,
+    style: { ...base.style, ...overrides?.style },
+  };
 }
 
 function normalizeDoc(doc: QrCodeDoc): QrCodeDoc {
@@ -121,7 +125,8 @@ function normalizeDoc(doc: QrCodeDoc): QrCodeDoc {
       (doc as unknown as { showDetails?: boolean }).showDetails ??
       true,
     upiVpa: (doc as unknown as { upiVpa?: string }).upiVpa || "",
-    upiPayeeName: (doc as unknown as { upiPayeeName?: string }).upiPayeeName || "",
+    upiPayeeName:
+      (doc as unknown as { upiPayeeName?: string }).upiPayeeName || "",
     upiAmount: (doc as unknown as { upiAmount?: string }).upiAmount || "",
     upiNote: (doc as unknown as { upiNote?: string }).upiNote || "",
     style: {

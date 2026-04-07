@@ -20,12 +20,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useQrCodeStore } from "@/features/qr-code-editor/store/qr-code.store";
-import { useSavedQrCodesStore } from "@/features/saved-items/qr-codes/saved-qr-codes.store";
-import { SavedQrCodesList } from "@/features/saved-items/qr-codes/SavedQrCodesList";
-import { useAutoSave } from "@/hooks/useAutoSave";
-import type { QrCodeDoc } from "@/features/qr-code-editor/types/qr-code.types";
 import { buildQrFileName } from "@/features/qr-code-editor/lib/qr-filename";
+import { useQrCodeStore } from "@/features/qr-code-editor/store/qr-code.store";
+import type { QrCodeDoc } from "@/features/qr-code-editor/types/qr-code.types";
+import { SavedQrCodesList } from "@/features/saved-items/qr-codes/SavedQrCodesList";
+import { useSavedQrCodesStore } from "@/features/saved-items/qr-codes/saved-qr-codes.store";
+import { useAutoSave } from "@/hooks/useAutoSave";
 import { trackEvent } from "@/lib/analytics";
 
 export function QrCodeActions() {
@@ -58,7 +58,8 @@ export function QrCodeActions() {
     const nextErrors: Record<string, string> = {};
     if (doc.type === "raw" && !doc.rawText.trim())
       nextErrors.rawText = "Raw data is required.";
-    if (doc.type === "url" && !doc.url.trim()) nextErrors.url = "URL is required.";
+    if (doc.type === "url" && !doc.url.trim())
+      nextErrors.url = "URL is required.";
     if (doc.type === "phone" && !doc.phoneNumber.trim())
       nextErrors.phoneNumber = "Phone number is required.";
     if (doc.type === "sms" && !doc.smsNumber.trim())
@@ -75,8 +76,10 @@ export function QrCodeActions() {
     if (doc.type === "email" && !doc.emailTo.trim())
       nextErrors.emailTo = "Recipient email is required.";
     if (doc.type === "event") {
-      if (!doc.eventTitle.trim()) nextErrors.eventTitle = "Event title is required.";
-      if (!doc.eventStart.trim()) nextErrors.eventStart = "Start time is required.";
+      if (!doc.eventTitle.trim())
+        nextErrors.eventTitle = "Event title is required.";
+      if (!doc.eventStart.trim())
+        nextErrors.eventStart = "Start time is required.";
       if (!doc.eventEnd.trim()) nextErrors.eventEnd = "End time is required.";
     }
     if (doc.type === "upi") {

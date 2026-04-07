@@ -43,7 +43,10 @@ export function ColorPickerField({
             </Button>
           }
         />
-        <PopoverContent className="w-auto p-3 flex flex-col gap-3" align="start">
+        <PopoverContent
+          className="w-auto p-3 flex flex-col gap-3"
+          align="start"
+        >
           <HexColorPicker color={value} onChange={onChange} />
           <div className="flex items-center gap-2">
             <div className="text-muted-foreground text-xs font-semibold">
@@ -60,4 +63,3 @@ export function ColorPickerField({
     </div>
   );
 }
-

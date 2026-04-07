@@ -92,7 +92,8 @@ function buildGoogleCalendarUrl(doc: QrCodeDoc): string {
   const params = new URLSearchParams();
   params.set("action", "TEMPLATE");
   if (doc.eventTitle.trim()) params.set("text", doc.eventTitle.trim());
-  if (doc.eventLocation.trim()) params.set("location", doc.eventLocation.trim());
+  if (doc.eventLocation.trim())
+    params.set("location", doc.eventLocation.trim());
   if (doc.eventDescription.trim())
     params.set("details", doc.eventDescription.trim());
   params.set("dates", dates);
@@ -128,7 +129,8 @@ function buildIcal(doc: QrCodeDoc): string {
     lines.push(`DTEND:${formatIcsUtcDateTime(end)}`);
   }
 
-  if (doc.eventTitle.trim()) lines.push(`SUMMARY:${escapeIcsText(doc.eventTitle.trim())}`);
+  if (doc.eventTitle.trim())
+    lines.push(`SUMMARY:${escapeIcsText(doc.eventTitle.trim())}`);
   if (doc.eventLocation.trim())
     lines.push(`LOCATION:${escapeIcsText(doc.eventLocation.trim())}`);
   if (doc.eventDescription.trim())

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import { Header } from "@/components/layout/Header";
 import { GoogleTag } from "@/components/shared/GoogleTag";
 import { GoogleTagManager } from "@/components/shared/GoogleTagManager";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { APP_NAME } from "@/lib/site";
-import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 

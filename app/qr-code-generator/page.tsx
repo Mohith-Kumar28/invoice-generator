@@ -13,10 +13,11 @@ export default function QrCodeGeneratorPage() {
   return (
     <>
       <h1 className="sr-only">QR Code Generator</h1>
-      <Suspense fallback={<div className="fixed inset-0 top-14 bg-background" />}>
+      <Suspense
+        fallback={<div className="fixed inset-0 top-14 bg-background" />}
+      >
         <QrCodeGeneratorClient />
       </Suspense>
     </>
   );
 }
-

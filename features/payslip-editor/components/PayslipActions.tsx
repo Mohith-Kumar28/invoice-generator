@@ -16,8 +16,8 @@ import { PayslipTemplate } from "@/features/payslip-editor/templates/PayslipTemp
 import { SavedPayslipsList } from "@/features/saved-items/payslips/SavedPayslipsList";
 import { useSavedPayslipsStore } from "@/features/saved-items/payslips/saved-payslips.store";
 import { useAutoSave } from "@/hooks/useAutoSave";
-import { trackEvent } from "@/lib/analytics";
 import { usePdfBrand } from "@/hooks/usePdfBrand";
+import { trackEvent } from "@/lib/analytics";
 import type { Payslip } from "@/types/payslip.types";
 
 export function PayslipActions() {

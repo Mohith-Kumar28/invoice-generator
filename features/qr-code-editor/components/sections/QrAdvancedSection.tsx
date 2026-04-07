@@ -1,5 +1,7 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -7,10 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { useQrCodeStore } from "@/features/qr-code-editor/store/qr-code.store";
 import type { QrErrorCorrectionLevel } from "@/features/qr-code-editor/types/qr-code.types";
 
@@ -36,29 +36,29 @@ export function QrAdvancedSection() {
               options.find((o) => o.value === doc.style.errorCorrectionLevel)
                 ?.label ?? "High (25%)";
             return (
-          <Select
-            value={selected}
-            onValueChange={(val) =>
-              updateDoc({
-                style: {
-                  errorCorrectionLevel:
-                    (options.find((o) => o.label === val)?.value ??
-                      "Q") as QrErrorCorrectionLevel,
-                },
-              })
-            }
-          >
-            <SelectTrigger id="qrEcc" className="w-full">
-              <SelectValue placeholder="Choose error correction level" />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((o) => (
-                <SelectItem key={o.value} value={o.label}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              <Select
+                value={selected}
+                onValueChange={(val) =>
+                  updateDoc({
+                    style: {
+                      errorCorrectionLevel: (options.find(
+                        (o) => o.label === val,
+                      )?.value ?? "Q") as QrErrorCorrectionLevel,
+                    },
+                  })
+                }
+              >
+                <SelectTrigger id="qrEcc" className="w-full">
+                  <SelectValue placeholder="Choose error correction level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.map((o) => (
+                    <SelectItem key={o.value} value={o.label}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             );
           })()}
         </div>
@@ -92,7 +92,9 @@ export function QrAdvancedSection() {
               <Textarea
                 id="captionDescription"
                 value={doc.captionDescription}
-                onChange={(e) => updateDoc({ captionDescription: e.target.value })}
+                onChange={(e) =>
+                  updateDoc({ captionDescription: e.target.value })
+                }
                 rows={3}
               />
             </div>

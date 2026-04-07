@@ -1,5 +1,5 @@
-import { createSavedItemsStore } from "@/features/saved-items/store/createSavedItemsStore";
 import type { QrCodeDoc } from "@/features/qr-code-editor/types/qr-code.types";
+import { createSavedItemsStore } from "@/features/saved-items/store/createSavedItemsStore";
 
 export const useSavedQrCodesStore = createSavedItemsStore<QrCodeDoc>({
   storageKey: "invoice-forge-saved-qr-codes",
@@ -12,9 +12,13 @@ export const useSavedQrCodesStore = createSavedItemsStore<QrCodeDoc>({
     if (q.type === "tweet") return !q.tweetText?.trim() && !q.tweetUrl?.trim();
     if (q.type === "wifi") return !q.wifiSsid?.trim();
     if (q.type === "email")
-      return !q.emailTo?.trim() && !q.emailSubject?.trim() && !q.emailBody?.trim();
+      return (
+        !q.emailTo?.trim() && !q.emailSubject?.trim() && !q.emailBody?.trim()
+      );
     if (q.type === "event")
-      return !q.eventTitle?.trim() && !q.eventStart?.trim() && !q.eventEnd?.trim();
+      return (
+        !q.eventTitle?.trim() && !q.eventStart?.trim() && !q.eventEnd?.trim()
+      );
     if (q.type === "upi") return !q.upiVpa?.trim();
     return true;
   },
