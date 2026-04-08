@@ -130,7 +130,7 @@ export default function InvoiceGeneratorLandingPage() {
                 <Button
                   nativeButton={false}
                   render={<Link href="#invoice-features" />}
-                  variant="secondary"
+                  variant="outline"
                   size="lg"
                   className="h-11 px-6"
                 >

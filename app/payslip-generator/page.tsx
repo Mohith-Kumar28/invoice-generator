@@ -137,7 +137,7 @@ export default function PayslipGeneratorLandingPage() {
                 <Button
                   nativeButton={false}
                   render={<Link href="#payslip-features" />}
-                  variant="secondary"
+                  variant="outline"
                   size="lg"
                   className="h-11 px-6"
                 >

@@ -148,7 +148,7 @@ export default function QrCodeGeneratorLandingPage() {
                 <Button
                   nativeButton={false}
                   render={<Link href="#qr-features" />}
-                  variant="secondary"
+                  variant="outline"
                   size="lg"
                   className="h-11 px-6"
                 >
