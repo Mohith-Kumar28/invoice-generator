@@ -1,4 +1,3 @@
-import { FileText } from "lucide-react";
 import Link from "next/link";
 import { GitHubIssueButton } from "@/components/shared/GitHubIssueButton";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
@@ -11,8 +10,9 @@ export function Header() {
       <div className="container flex h-14 max-w-screen-2xl items-center px-4 md:px-8 mx-auto justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center space-x-2">
-            
-            <span className="font-bold inline-block capitalize">{APP_NAME}</span>
+            <span className="font-bold inline-block capitalize">
+              {APP_NAME}
+            </span>
           </Link>
 
           <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground">

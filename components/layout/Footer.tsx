@@ -116,9 +116,7 @@ export function Footer() {
                   FAQ
                 </Link>
               </li>
-              <li className="pt-1">
-                <GitHubIssueButton />
-              </li>
+            
             </ul>
           </div>
         </div>
